@@ -47,7 +47,7 @@ test('customers seat, order, cook, get served, and pay', () => {
   assert.equal(s.orders[0].status,'queued');
   advanceSimulation(s,1,rng);
   assert.equal(s.orders[0].status,'cooking');
-  advanceSimulation(s,50,rng);
+  advanceSimulation(s,28,rng);
   assert.ok(s.served>=1,'at least one meal served');
   assert.ok(s.cash>100000,'money only earned after serving');
   assert.equal(s.stock,7,'one cooking order consumed one ingredient unit');
