@@ -1,9 +1,10 @@
-// VIETNAM LIFE 3D — V0.3 Hanoi 3D World, Restaurant Interior & Collision System.
+// VIETNAM LIFE 3D — V0.3 Hanoi 3D World, Restaurant Interior, Reception & 3D Guest Sync.
 import { createAssetRegistry, computeNpcLodTier } from './asset-loader.mjs';
 import { npcActivity, npcPopulation, activeOrders } from '../simulation.mjs';
 
 export const RESTAURANT_ZONES = {
   entrance: { x: -68, z: 12, label: 'Cổng vào Nhậu Phố Việt' },
+  reception: { x: -60, z: 15.5, label: 'Quầy Lễ Tân Đón Khách' },
   kitchen: { x: -77, z: 36.5, label: 'Quầy Bếp Nóng' },
   cashier: { x: -56.5, z: 26, label: 'Quầy Thu Ngân' },
   delivery: { x: -84, z: 34, label: 'Khu Giao Nhận Nguyên Liệu' },
@@ -89,6 +90,20 @@ export function computeGuestTargetPosition(order, tables = []) {
   return { x: spot[0] + 0.85, z: spot[1] + 0.7 };
 }
 
+export function computeGuestVisualState(order, tables = []) {
+  const target = computeGuestTargetPosition(order, tables);
+  const status = order?.status || 'queued';
+  return {
+    orderId: order?.id ?? null,
+    table: order?.table ?? null,
+    dishName: order?.dishName || 'Món nhậu',
+    status,
+    target,
+    showFoodOnTable: status === 'eating' || status === 'serving',
+    atCashier: status === 'paying',
+  };
+}
+
 export function createHanoiScene(THREE, container, initialState) {
   const registry = createAssetRegistry(THREE);
   const mat = (c, r = 0.84, m = 0.06) => registry.getMaterial(c, r, m);
@@ -98,16 +113,20 @@ export function createHanoiScene(THREE, container, initialState) {
   scene.fog = new THREE.FogExp2('#a5cce0', 0.0055);
 
   const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 700);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
-  renderer.shadowMap.enabled = true;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  const gl = renderer.getContext?.();
+  const dbg = gl?.getExtension?.('WEBGL_debug_renderer_info');
+  const gpuName = (dbg && gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) || gl?.getParameter?.(gl.RENDERER) || '';
+  const isSoftwareGl = /swiftshader|llvmpipe|software/i.test(String(gpuName));
+  renderer.setPixelRatio(isSoftwareGl ? 0.85 : Math.min(window.devicePixelRatio || 1, 1.6));
+  renderer.shadowMap.enabled = !isSoftwareGl;
   container.appendChild(renderer.domElement);
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x536578, 1.9);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffe9c8, 2.4);
   sun.position.set(32, 72, 36);
-  sun.castShadow = true;
+  sun.castShadow = !isSoftwareGl;
   scene.add(sun);
 
   // Warm ambient point light inside Nhậu Phố Việt
@@ -115,8 +134,8 @@ export function createHanoiScene(THREE, container, initialState) {
   restaurantLight.position.set(-68, 7.2, 28);
   scene.add(restaurantLight);
 
-  function cube(w, h, d, c, x, y, z, cast = true) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c));
+  function cube(w, h, d, c, x, y, z, cast = false) {
+    const m = new THREE.Mesh(registry.getBoxGeometry(w, h, d), mat(c));
     m.position.set(x, y, z);
     m.castShadow = cast;
     m.receiveShadow = true;
@@ -133,18 +152,18 @@ export function createHanoiScene(THREE, container, initialState) {
     return m;
   }
 
-  function cyl(r, h, c, x, y, z) {
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 10), mat(c));
+  function cyl(r, h, c, x, y, z, cast = false) {
+    const m = new THREE.Mesh(registry.getCylinderGeometry(r, r, h, 10), mat(c));
     m.position.set(x, y, z);
-    m.castShadow = true;
+    m.castShadow = cast;
     scene.add(m);
     return m;
   }
 
-  function sphere(r, c, x, y, z) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), mat(c));
+  function sphere(r, c, x, y, z, cast = false) {
+    const m = new THREE.Mesh(registry.getSphereGeometry(r, 10, 8), mat(c));
     m.position.set(x, y, z);
-    m.castShadow = true;
+    m.castShadow = cast;
     scene.add(m);
     return m;
   }
@@ -187,10 +206,9 @@ export function createHanoiScene(THREE, container, initialState) {
 
   // Hanoi tube houses (nhà ống) with balconies, rooftop water tanks, and shop signs
   function building(x, z, w, d, h, color, roofColor = '#8c4237') {
-    cube(w, h, d, color, x, h / 2, z);
-    cube(w + 0.8, 0.7, d + 0.8, roofColor, x, h + 0.35, z);
-    // Rooftop stainless steel water tank (bồn nước Sơn Hà style)
-    cyl(0.65, 1.8, '#bfc9d1', x - w * 0.22, h + 1.4, z - 1.2);
+    cube(w, h, d, color, x, h / 2, z, true);
+    cube(w + 0.8, 0.7, d + 0.8, roofColor, x, h + 0.35, z, false);
+    cyl(0.65, 1.8, '#bfc9d1', x - w * 0.22, h + 1.4, z - 1.2, false);
     const faceZ = z < 0 ? z + d / 2 + 0.08 : z - d / 2 - 0.08;
     const balconyZ = z < 0 ? z + d / 2 + 0.55 : z - d / 2 - 0.55;
     for (let j = 0; j < 3; j++) {
@@ -216,7 +234,7 @@ export function createHanoiScene(THREE, container, initialState) {
   sign('CÀ PHÊ PHỐ CỔ', 28, 6.2, 47.2, 10, 2.2, '#3a261b', '#f8d08b');
   sign('CHỢ ĐỒNG XUÂN • TẠP HÓA', 88, 6.5, 47.2, 12, 2.3, '#1e523a', '#e8f9ee');
 
-  // Trees & Streetlamps
+  // Trees & Streetlamps (leaving front of Nhậu Phố Việt unobstructed)
   function tree(x, z) {
     cyl(0.35, 5, '#74634a', x, 2.5, z);
     sphere(3.2, '#57845c', x, 6.5, z);
@@ -229,7 +247,7 @@ export function createHanoiScene(THREE, container, initialState) {
     lampBulbs.push(bulb);
   }
   for (let x = -160; x < 165; x += 17) {
-    tree(x, 24);
+    if (x < -88 || x > -34) tree(x, 24);
     tree(x, -24);
     if (x % 34 === 0) {
       streetLamp(x + 5, 16);
@@ -239,7 +257,6 @@ export function createHanoiScene(THREE, container, initialState) {
 
   // --- NHẬU PHỐ VIỆT Restaurant Pavilion & Functional Zones ---
   ground(36, 34, '#e1c6a1', -68, 29.5, 0.07);
-  // Open-air pavilion pillars and roof
   cube(30, 0.9, 20, '#a9533b', -68, 8.6, 33);
   cube(28, 3.2, 1.2, '#d8b38b', -68, 1.6, 41.5);
   for (const px of [-81.5, -54.5]) {
@@ -248,6 +265,10 @@ export function createHanoiScene(THREE, container, initialState) {
     }
   }
   sign('NHẬU PHỐ VIỆT', -68, 9.5, 22.8, 16, 3.5, '#743b2c', '#ffe7b3');
+
+  // Reception Desk (Quầy Lễ Tân Đón Khách at restaurant front)
+  cube(2.4, 1.15, 1.3, '#7b4831', RESTAURANT_ZONES.reception.x, 0.58, RESTAURANT_ZONES.reception.z);
+  sign('LỄ TÂN • ĐÓN KHÁCH', RESTAURANT_ZONES.reception.x, 2.5, RESTAURANT_ZONES.reception.z, 3.8, 0.95, '#743b2c', '#ffe7b3');
 
   // Kitchen Counter (Quầy Bếp)
   cube(7.5, 1.25, 2.2, '#54636e', RESTAURANT_ZONES.kitchen.x, 0.65, RESTAURANT_ZONES.kitchen.z + 1.4);
@@ -263,48 +284,30 @@ export function createHanoiScene(THREE, container, initialState) {
   cube(2.2, 1.0, 2.2, '#8b6843', RESTAURANT_ZONES.delivery.x, 0.5, RESTAURANT_ZONES.delivery.z);
   cube(1.6, 0.9, 1.6, '#9c7850', RESTAURANT_ZONES.delivery.x + 1.4, 0.45, RESTAURANT_ZONES.delivery.z - 1.5);
 
-  // Restaurant Dining Tables & Vietnamese Plastic Stools
-  const tables = [];
-  function makeTable(i) {
-    const cols = 5;
-    const tx = -81 + (i % cols) * 6.3;
-    const tz = 15 + Math.floor(i / cols) * 5.8;
-    // Table top & base
-    cyl(1.38, 0.14, '#8a553d', tx, 0.82, tz);
-    cyl(0.28, 0.8, '#4a352a', tx, 0.4, tz);
-    // Low plastic stools (blue & red Hanoi beer stools)
-    const stoolColor = i % 2 === 0 ? '#2b6cb0' : '#c53030';
-    cyl(0.34, 0.44, stoolColor, tx + 1.85, 0.22, tz);
-    cyl(0.34, 0.44, stoolColor, tx - 1.85, 0.22, tz);
-    cyl(0.34, 0.44, stoolColor, tx, 0.22, tz + 1.75);
-    tables.push([tx, tz]);
-  }
-  for (let i = 0; i < initialState.tables; i++) makeTable(i);
-
-  // Person Avatar Builder with Role Accessories
+  // Person Avatar Builder with Role Accessories (reusing cached geometries)
   function person(color, x, z, scale = 1, roleBadge = null) {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.48, 2, 9), mat(color));
+    const body = new THREE.Mesh(registry.getCylinderGeometry(0.62, 0.48, 2, 9), mat(color));
     body.position.y = 2;
     g.add(body);
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.64, 10, 8), mat('#e6ae89'));
+    const head = new THREE.Mesh(registry.getSphereGeometry(0.64, 10, 8), mat('#e6ae89'));
     head.position.y = 3.45;
     g.add(head);
-    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.64, 10, 8), mat('#252e36'));
+    const hair = new THREE.Mesh(registry.getSphereGeometry(0.64, 10, 8), mat('#252e36'));
     hair.position.y = 3.77;
     hair.scale.set(1, 0.5, 1);
     g.add(hair);
 
     if (roleBadge === 'chef') {
-      const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.45, 0.75, 10), mat('#ffffff'));
+      const hat = new THREE.Mesh(registry.getCylinderGeometry(0.5, 0.45, 0.75, 10), mat('#ffffff'));
       hat.position.y = 4.35;
       g.add(hat);
     } else if (roleBadge === 'cashier') {
-      const visor = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 0.9), mat('#225943'));
+      const visor = new THREE.Mesh(registry.getBoxGeometry(0.9, 0.2, 0.9), mat('#225943'));
       visor.position.y = 4.05;
       g.add(visor);
     } else if (roleBadge === 'waiter') {
-      const tray = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 10), mat('#d4a359'));
+      const tray = new THREE.Mesh(registry.getCylinderGeometry(0.55, 0.55, 0.08, 10), mat('#d4a359'));
       tray.position.set(0.75, 2.35, 0.35);
       g.add(tray);
     }
@@ -314,6 +317,46 @@ export function createHanoiScene(THREE, container, initialState) {
     scene.add(g);
     return g;
   }
+
+  // Receptionist Avatar standing at Quầy Lễ Tân
+  const receptionist = person('#b84b39', RESTAURANT_ZONES.reception.x, RESTAURANT_ZONES.reception.z + 1.1, 0.84, 'waiter');
+  receptionist.rotation.y = Math.PI;
+
+  // Restaurant Dining Tables, Fallback Stools, and Table Food Props (synced with order status)
+  const tables = [];
+  const fallbackStools = [];
+  const tableFoodProps = [];
+
+  function makeTable(i) {
+    const cols = 5;
+    const tx = -81 + (i % cols) * 6.3;
+    const tz = 15 + Math.floor(i / cols) * 5.8;
+    cyl(1.4, 0.8, '#754734', tx, 0.65, tz);
+    const s1 = cyl(0.35, 0.7, '#604536', tx + 2, 0.35, tz);
+    const s2 = cyl(0.35, 0.7, '#604536', tx - 2, 0.35, tz);
+    fallbackStools.push(s1, s2);
+    tables.push([tx, tz]);
+
+    // 3D Dish & Beer Mug prop on table (visible when customer is being served / eating)
+    const foodGroup = new THREE.Group();
+    const plate = new THREE.Mesh(registry.getCylinderGeometry(0.45, 0.38, 0.08, 10), mat('#f7f4eb'));
+    plate.position.set(tx, 1.09, tz);
+    const dishMesh = new THREE.Mesh(registry.getSphereGeometry(0.26, 8, 6), mat('#d97736'));
+    dishMesh.position.set(tx, 1.18, tz);
+    const beerMug = new THREE.Mesh(registry.getCylinderGeometry(0.14, 0.14, 0.32, 8), mat('#f2c94c'));
+    beerMug.position.set(tx + 0.52, 1.2, tz + 0.25);
+    foodGroup.add(plate, dishMesh, beerMug);
+    foodGroup.visible = false;
+    scene.add(foodGroup);
+    tableFoodProps.push(foodGroup);
+
+    if (scene.userData?.spawnStoolsAtTable) {
+      s1.visible = false;
+      s2.visible = false;
+      scene.userData.spawnStoolsAtTable(tx, tz);
+    }
+  }
+  for (let i = 0; i < initialState.tables; i++) makeTable(i);
 
   // Citizens on the street
   const people = [];
@@ -388,22 +431,36 @@ export function createHanoiScene(THREE, container, initialState) {
   const player = person('#2c668d', -50, 14, 1);
   const playerMarker = sphere(0.32, '#ffd15b', -50, 4.6, 14);
 
-  // Guest Avatars
+  // Guest Avatars & Table Food Prop Synchronization (Priority 4)
   const guestAvatars = new Map();
   function syncGuests(state) {
     const current = activeOrders(state);
     const ids = new Set(current.map(o => o.id));
+    const tablesWithFood = new Set();
+
     for (const o of current) {
+      const vState = computeGuestVisualState(o, tables);
+      if (vState.showFoodOnTable && Number.isInteger(o.table)) {
+        tablesWithFood.add(o.table);
+      }
       if (!guestAvatars.has(o.id)) {
         guestAvatars.set(
           o.id,
-          person(colors[o.id % colors.length], RESTAURANT_ZONES.entrance.x, RESTAURANT_ZONES.entrance.z, 0.78)
+          person(colors[o.id % colors.length], RESTAURANT_ZONES.reception.x, RESTAURANT_ZONES.reception.z - 1, 0.78)
         );
       }
       const avatar = guestAvatars.get(o.id);
-      avatar.userData.target = computeGuestTargetPosition(o, tables);
-      avatar.userData.status = o.status;
+      avatar.userData.target = vState.target;
+      avatar.userData.status = vState.status;
+      avatar.userData.table = o.table;
     }
+
+    for (let t = 0; t < tableFoodProps.length; t++) {
+      if (tableFoodProps[t]) {
+        tableFoodProps[t].visible = tablesWithFood.has(t);
+      }
+    }
+
     for (const [id, g] of guestAvatars) {
       if (!ids.has(id)) {
         scene.remove(g);
@@ -518,6 +575,9 @@ export function createHanoiScene(THREE, container, initialState) {
         g.position.x += (move * dx) / dist;
         g.position.z += (move * dz) / dist;
         g.rotation.y = Math.atan2(dx, dz);
+      } else if (g.userData.table !== undefined && tables[g.userData.table] && g.userData.status !== 'paying') {
+        const [tx, tz] = tables[g.userData.table];
+        g.rotation.y = Math.atan2(tx - g.position.x, tz - g.position.z);
       }
     }
 
@@ -556,7 +616,11 @@ export function createHanoiScene(THREE, container, initialState) {
     scene,
     camera,
     renderer,
+    player,
     tables,
+    fallbackStools,
+    tableFoodProps,
+    guestAvatars,
     makeTable,
     syncGuests,
     syncStaffAvatars,

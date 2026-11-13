@@ -5,8 +5,8 @@ export const BLENDER_ASSET_MANIFEST = {
   plastic_stool: {
     id: 'plastic_stool',
     name: 'Ghế nhựa quán nhậu Hà Nội',
-    path: './assets/models/plastic_stool.glb',
-    dimensions: { width: 0.34, height: 0.42, depth: 0.34 },
+    path: './assets/models/ghe-nhua.glb',
+    dimensions: { width: 0.34, height: 0.463, depth: 0.34 },
     maxTriangles: 450,
     maxTextureSize: 1024,
     origin: 'bottom-center',
@@ -126,6 +126,7 @@ export function computeNpcLodTier(distanceMeters) {
 
 export function createAssetRegistry(THREE, options = {}) {
   const materials = new Map();
+  const geometries = new Map();
   const templates = new Map();
   const glbCache = new Map();
   const enableGlbProbing = Boolean(options.enableGlbProbing);
@@ -143,6 +144,24 @@ export function createAssetRegistry(THREE, options = {}) {
       );
     }
     return materials.get(key);
+  }
+
+  function getBoxGeometry(w, h, d) {
+    const key = `box|${w}|${h}|${d}`;
+    if (!geometries.has(key)) geometries.set(key, new THREE.BoxGeometry(w, h, d));
+    return geometries.get(key);
+  }
+
+  function getCylinderGeometry(rt, rb, h, seg = 10) {
+    const key = `cyl|${rt}|${rb}|${h}|${seg}`;
+    if (!geometries.has(key)) geometries.set(key, new THREE.CylinderGeometry(rt, rb, h, seg));
+    return geometries.get(key);
+  }
+
+  function getSphereGeometry(r, ws = 10, hs = 8) {
+    const key = `sph|${r}|${ws}|${hs}`;
+    if (!geometries.has(key)) geometries.set(key, new THREE.SphereGeometry(r, ws, hs));
+    return geometries.get(key);
   }
 
   async function tryLoadGlb(assetId, gltfLoader) {
@@ -177,12 +196,16 @@ export function createAssetRegistry(THREE, options = {}) {
   return {
     manifest: BLENDER_ASSET_MANIFEST,
     getMaterial,
+    getBoxGeometry,
+    getCylinderGeometry,
+    getSphereGeometry,
     templates,
     tryLoadGlb,
     stats() {
       return {
         manifestCount: Object.keys(BLENDER_ASSET_MANIFEST).length,
         cachedMaterials: materials.size,
+        cachedGeometries: geometries.size,
         cachedGlbModels: glbCache.size,
       };
     },

@@ -15,21 +15,23 @@
 <h2>THỰC ĐƠN & TỒN KHO NGUYÊN LIỆU (VND)</h2><div class="menu-box" id="menuList">Đang tải thực đơn...</div>
 <h2>NHỊP SỐNG CƯ DÂN HÀ NỘI</h2><div class="orders" id="npcSummary">Đang cập nhật lịch trình cư dân...</div>
 <h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
-<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
-<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.3 (hỗ trợ nạp GLB từ Blender). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.3 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
-<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán (có chặn va chạm tường)<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Bếp nấu • Phục vụ bưng bàn • Thu ngân tính tiền VND.</div>
+<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán (đến Quầy Lễ Tân để nghe chào khi bật tiếng)<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Bếp nấu • Phục vụ bưng bàn • Thu ngân tính tiền VND.</div>
 <div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import * as THREE from 'three';
+import { installUserStools, installNpcGreeting } from './src/restaurant-media.mjs';
 import {
   MENU, INGREDIENT_LABELS, activityLabel,
   advanceSimulation, activeOrders, npcPopulation,
   countStaffByRole, restockIngredients, hireStaffMember,
   calculateProfit, saveGameState, loadGameState
 } from './src/simulation.mjs';
-import { createHanoiScene } from './src/world/hanoi-scene.mjs';
+import { createHanoiScene, RESTAURANT_ZONES } from './src/world/hanoi-scene.mjs';
 
 const $=id=>document.getElementById(id);
 const loaded=loadGameState(window.localStorage);
@@ -85,6 +87,12 @@ function update(){
 }
 
 const world=createHanoiScene(THREE,$('scene'),state);
+const {scene,tables,player}=world;
+const fallbackStools=[];
+for(const s of world.fallbackStools)fallbackStools.push(s);
+installUserStools({scene,THREE,tables,fallbackStools,notify:toast});
+const greetingCtrl=installNpcGreeting({button:$('greetNpc'),notify:toast});
+
 function save(){saveGameState(window.localStorage,state);toast('Đã lưu an toàn kèm mã kiểm tra checksum')}
 
 $('buy').onclick=()=>{
@@ -105,6 +113,7 @@ $('advert').onclick=()=>{
 $('table').onclick=()=>{
  if(state.cash<1500000)return toast('Không đủ tiền');
  state.cash-=1500000;state.todayCosts+=1500000;state.tables++;world.makeTable(state.tables-1);
+ for(let i=fallbackStools.length;i<world.fallbackStools.length;i++)fallbackStools.push(world.fallbackStools[i]);
  saveGameState(window.localStorage,state);update();toast('Đã bổ sung thêm bàn nhậu');
 };
 $('weather').onclick=()=>{state.rain=!state.rain;update()};
@@ -155,6 +164,7 @@ function tick(){
   if(state.day!==previousDay)saveGameState(window.localStorage,state);
  }
  world.stepFrame(state,dt,keys,cameraControl);
+ greetingCtrl.checkReceptionProximity(player.position,RESTAURANT_ZONES.reception);
 }
 window.addEventListener('resize',world.resize);
 world.resize();

@@ -547,6 +547,7 @@ function serveOrderToTable(s, o) {
 }
 
 function completeOrderPayment(s, o) {
+  if (o.paid) return;
   o.status = 'finished';
   o.paid = true;
   const basePrice = Number.isFinite(Number(o.price)) ? Number(o.price) : 115000;
@@ -692,8 +693,14 @@ function stepMinute(s, random) {
         addLog(s, 'Khách không thể gọi món vì hết nguyên liệu');
       } else {
         const orderIndex = s.nextOrderId - 1;
+        const activeCitizenIds = new Set(activeOrders(s).map(o => o.citizenId).filter(Boolean));
         const citizenCandidate = Array.isArray(s.citizens)
-          ? s.citizens.find(c => !c.currentOrderId && (c.activity === 'lunch' || c.activity === 'dinner' || c.hunger >= 50))
+          ? s.citizens.find(
+              c =>
+                !c.currentOrderId &&
+                !activeCitizenIds.has(c.id) &&
+                (c.activity === 'lunch' || c.activity === 'dinner' || c.hunger >= 50)
+            )
           : null;
         const customer = NAMES[orderIndex % NAMES.length];
         const dish = selectMenuDish(s, random, citizenCandidate ? citizenCandidate.budget : Infinity) || MENU[0];
