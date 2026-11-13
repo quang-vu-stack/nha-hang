@@ -4,32 +4,49 @@
 <style>
 *{box-sizing:border-box}body{margin:0;background:#091622;color:#ecf4fa;font:14px system-ui,Arial;overflow:hidden}#scene{position:fixed;inset:0}
 #panel{position:fixed;left:16px;top:16px;bottom:16px;width:292px;padding:18px;background:#101e2ddd;border:1px solid #ffffff28;backdrop-filter:blur(18px);border-radius:20px;overflow:auto;box-shadow:0 16px 55px #0006}h1{font-size:21px;line-height:1.15;margin:0 0 8px}h2{font-size:13px;color:#9bb3c8;margin:18px 0 10px}p{color:#afc0cf;line-height:1.6;margin:7px 0 12px}.accent{color:#f8c879}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:12px;background:#ffffff0c;border:1px solid #ffffff18;border-radius:12px}.stat b{display:block;font-size:17px;margin-top:5px}.stat small{color:#b0c5d5}button{border:1px solid #ffffff1b;border-radius:11px;background:#20364a;color:#fff;padding:11px 12px;cursor:pointer;font:inherit;font-weight:600}button:hover{background:#385772}.actions{display:grid;gap:8px}.primary{background:#a95d34}.primary:hover{background:#c27748}.top{position:fixed;right:17px;top:17px;background:#102436d9;padding:12px 18px;border-radius:14px;border:1px solid #ffffff24}.bottom{position:fixed;bottom:18px;right:16px;background:#102436d9;padding:13px;border:1px solid #ffffff22;border-radius:14px;max-width:330px;line-height:1.6}.pill{display:inline-block;color:#a6efc6;background:#19544088;border-radius:15px;padding:3px 8px;font-size:11px}#mapModal{display:none;position:fixed;inset:5%;z-index:5;background:#142235;border:1px solid #ffffff33;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px #0009}#map{height:calc(100% - 59px)}#mapHeader{padding:10px 15px;display:flex;align-items:center;justify-content:space-between}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:12px 20px;background:#0b2b37e8;border:1px solid #ffffff44;border-radius:14px;display:none;z-index:9;max-width:85vw;text-align:center}@media(max-width:700px){#panel{width:205px;padding:10px;left:7px;top:7px;bottom:7px;border-radius:13px}h1{font-size:16px}.stat{padding:7px}.stat b{font-size:13px}.top{top:7px;right:7px;padding:8px;font-size:11px}.bottom{right:7px;bottom:7px;max-width:155px;font-size:11px;padding:8px}button{padding:9px 7px;font-size:12px}}
+.orders{white-space:pre-line;font-size:12px;line-height:1.6;color:#d9e8ed;background:#0a19299a;border-radius:10px;padding:10px;max-height:112px;overflow-y:auto}.activity{white-space:pre-line;font-size:11px;line-height:1.6;color:#b2c9d5;max-height:110px;overflow-y:auto}.sim-box{padding:8px 10px;background:#31504488;border-radius:9px;margin-top:10px;font-size:12px;color:#d5efdd}
 </style></head>
 <body><div id="scene"></div><aside id="panel">
-<div class="pill">V0.1 • PRE-ALPHA</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
+<div class="pill">V0.2 • PRE-ALPHA</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
 <div class="stats"><div class="stat"><small>💰 Tiền mặt</small><b id="cash"></b></div><div class="stat"><small>🍽️ Khách phục vụ</small><b id="served"></b></div><div class="stat"><small>👥 Nhân viên</small><b id="staff"></b></div><div class="stat"><small>📦 Nguyên liệu</small><b id="stock"></b></div><div class="stat"><small>⭐ Danh tiếng</small><b id="reputation"></b></div><div class="stat"><small>🏮 Bàn ăn</small><b id="tables"></b></div></div>
-<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
-<p style="font-size:12px">Đây là cảnh quan 3D cách điệu, không phải bản đồ Hà Nội 1:1. NPC, giao thông và doanh thu là mô phỏng.</p>
+<div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang ngồi trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
+<h2>ĐƠN HÀNG ĐANG XỬ LÝ</h2><div class="orders" id="orders">Chưa có khách</div>
+<h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<p style="font-size:12px">Cảnh Hà Nội 3D cách điệu (chưa phải bản đồ 1:1). NPC có lịch sinh hoạt; khách đặt món, bếp nấu và doanh thu tính theo đơn.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
-<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Dân cư, xe máy và khách quán hoạt động liên tục.</div>
+<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Dân cư theo giờ, khách vào bàn và bếp xử lý món.</div>
 <div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import {createState,advanceSimulation,activeOrders,npcActivity,npcPopulation} from './src/simulation.mjs';
 const $=id=>document.getElementById(id);
 const saveKey='vietnam-life-3d-github-v01';
-const start={cash:80000000,served:0,staff:3,stock:160,reputation:35,tables:6,minute:12*60,day:1,rain:false};
-let state={...start};try{const s=JSON.parse(localStorage.getItem(saveKey));if(s)state={...start,...s}}catch{}
+let savedState={};try{savedState=JSON.parse(localStorage.getItem(saveKey))||{}}catch{}
+let state=createState(savedState);
 let timer;function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(timer);timer=setTimeout(()=>$('toast').style.display='none',3000)}
 const money=n=>Math.round(n).toLocaleString('vi-VN')+' ₫';
-function update(){for(const k of ['cash','served','staff','stock','reputation','tables'])$(k).textContent=k==='cash'?money(state[k]):state[k];$('clock').textContent=String(Math.floor(state.minute/60)%24).padStart(2,'0')+':'+String(Math.floor(state.minute%60)).padStart(2,'0');$('day').textContent='Ngày '+state.day;$('condition').textContent=state.rain?'🌧️ Mưa Hà Nội':'☀️ Hà Nội'}
+const phaseName={queued:'Đợi chế biến',cooking:'Đang nấu',serving:'Đang phục vụ',eating:'Đang ăn'};
+function update(){
+ for(const k of ['cash','served','staff','stock','reputation','tables']) $(k).textContent=k==='cash'?money(state[k]):k==='reputation'?state[k].toFixed(1):state[k];
+ $('clock').textContent=String(Math.floor(state.minute/60)%24).padStart(2,'0')+':'+String(Math.floor(state.minute%60)%60).padStart(2,'0');
+ $('day').textContent='Ngày '+state.day;$('condition').textContent=state.rain?'🌧️ Mưa Hà Nội':'☀️ Hà Nội';
+ const active=activeOrders(state);
+ $('queue').textContent=active.length; $('dayRevenue').textContent=money(state.todayRevenue);
+ $('citizens').textContent=npcPopulation(state.minute);$('shopStatus').textContent=state.open?'Đang mở cửa':'Đã tạm đóng';
+ $('toggleShop').textContent=state.open?'🚪 Tạm đóng cửa quán':'🏮 Mở cửa quán';
+ $('orders').textContent=active.length?active.slice(0,9).map(o=>'Bàn '+(o.table+1)+' • '+o.customer+' — '+(phaseName[o.status]||o.status)).join('\n'):'Hiện chưa có đơn hàng';
+ $('logs').textContent=state.log.length?state.log.join('\n'):'Chờ khách đến quán...';
+}
 function save(){localStorage.setItem(saveKey,JSON.stringify(state));toast('Đã lưu trên trình duyệt này')}
 function buy(cost,fn){if(state.cash<cost)return toast('Không đủ tiền');state.cash-=cost;fn();update();localStorage.setItem(saveKey,JSON.stringify(state))}
 $('buy').onclick=()=>buy(800000,()=>{state.stock+=100;toast('Đã nhập hàng')});
-$('hire').onclick=()=>buy(2000000,()=>{state.staff++;toast('Đã tuyển nhân viên')});
+$('hire').onclick=()=>buy(2000000,()=>{state.staff++;addStaffAvatar();toast('Đã tuyển nhân viên')});
 $('advert').onclick=()=>buy(600000,()=>{state.reputation=Math.min(100,state.reputation+4);toast('Đã quảng cáo nhà hàng')});
 $('table').onclick=()=>buy(1500000,()=>{state.tables++;makeTable(state.tables);toast('Đã bổ sung bàn')});
 $('weather').onclick=()=>{state.rain=!state.rain;update()};$('save').onclick=save;
+$('toggleShop').onclick=()=>{state.open=!state.open;toast(state.open?'Đã mở quán đón khách':'Tạm đóng cửa, xử lý đơn còn lại');save();update()};
 let map;const cities=[['Hà Nội',21.0285,105.8542],['Hải Phòng',20.8449,106.6881],['Đà Nẵng',16.0544,108.2022],['Huế',16.4637,107.5909],['TP. Hồ Chí Minh',10.8231,106.6297],['Cần Thơ',10.0452,105.7469],['Thanh Hóa',19.8075,105.7764]];
 $('showMap').onclick=()=>{$('mapModal').style.display='block';if(!map){map=L.map('map').setView([16.3,107.0],6);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);cities.forEach(c=>L.marker([c[1],c[2]]).addTo(map).bindPopup(c[0]+' — khu vực tương lai'))}setTimeout(()=>map.invalidateSize(),50)};
 $('closeMap').onclick=()=>$('mapModal').style.display='none';
@@ -58,9 +75,36 @@ function makeTable(i){const cols=5;let tx=-81+(i%cols)*6.3,tz=15+Math.floor(i/co
 for(let i=0;i<state.tables;i++)makeTable(i);
 function person(color,x,z,scale=1){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.62,.48,2,9),mat(color));body.position.y=2;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#e6ae89'));head.position.y=3.45;g.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#252e36'));hair.position.y=3.77;hair.scale.set(1,.5,1);g.add(hair);g.position.set(x,0,z);g.scale.setScalar(scale);scene.add(g);return g}
 const people=[];const colors=['#36739b','#bc6a60','#728a6c','#b59158','#676f9b','#a35f89','#db9c55'];
-for(let i=0;i<30;i++){const x=-150+Math.random()*300,z=i%3?20+Math.random()*3:-20-Math.random()*3;people.push({obj:person(colors[i%colors.length],x,z,.8+Math.random()*.2),speed:.035+Math.random()*.07,dir:Math.random()<.5?-1:1,base:z})}
-for(let i=0;i<state.staff;i++)person('#ab4935',-80+i*4,35,.9);
+const roles=['student','worker','shopkeeper','delivery','resident','worker','student'];
+for(let i=0;i<35;i++){
+ const x=-150+(i*37)%300,z=i%2?21:-21;
+ people.push({i,role:roles[i%roles.length],activity:'',obj:person(colors[i%colors.length],x,z,.79+(i%4)*.06),speed:.07+(i%5)*.013,target:{x,z},dir:1});
+}
+function npcDestination(p, activity){
+ const i=p.i;
+ if(activity==='home'||activity==='sleep')return {x:-150+(i*19)%295,z:i%2?43:-43};
+ if(activity==='work')return {x:-140+(i*23)%280,z:i%2?26:-26};
+ if(activity==='lunch')return {x:-80+(i%8)*4,z:18+(i%3)*3};
+ if(activity==='shop'||activity==='leisure')return {x:-108+(i%10)*10,z:21+(i%2)*3};
+ return {x:-148+(i*37)%296,z:i%2?21:-21};
+}
+let staffAvatars=0;
+function addStaffAvatar(){person('#ab4935',-80+(staffAvatars%7)*3.3,34+Math.floor(staffAvatars/7)*3,.85);staffAvatars++}
+for(let i=0;i<state.staff;i++)addStaffAvatar();
 const player=person('#2c668d',-50,14,1);sphere(.3,'#ffd15b',-50,4.6,14);
+const guestAvatars=new Map();
+function syncGuests(){
+ const current=activeOrders(state);
+ const ids=new Set(current.map(o=>o.id));
+ for(const o of current){
+  const spot=tables[o.table];if(!spot)continue;
+  if(!guestAvatars.has(o.id))guestAvatars.set(o.id,person(colors[o.id%colors.length],-58,12,.78));
+  const avatar=guestAvatars.get(o.id);
+  avatar.userData.target={x:spot[0]+.8,z:spot[1]+.7};
+ }
+ for(const [id,g] of guestAvatars)if(!ids.has(id)){scene.remove(g);guestAvatars.delete(id)}
+}
+syncGuests();
 const vehicles=[];for(let i=0;i<11;i++){const x=-165+i*32,z=i%2?-5:5;const body=cube(2,1.1,1.6,colors[i%colors.length],x,1.2,z);const wheel1=cyl(.7,.25,'#20262c',x-.7,.6,z);const wheel2=cyl(.7,.25,'#20262c',x+.7,.6,z);vehicles.push({body,wheel1,wheel2,dir:i%2?-1:1,speed:.15+i*.012})}
 let keys=new Set(),yaw=0.7,zoom=24,drag=false,last=0;
 window.addEventListener('keydown',e=>{keys.add(e.key.toLowerCase());if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault()});
@@ -68,17 +112,42 @@ window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX});window.addEventListener('pointerup',()=>drag=false);
 window.addEventListener('pointermove',e=>{if(drag){yaw+=(e.clientX-last)*.006;last=e.clientX}});
 renderer.domElement.addEventListener('wheel',e=>{zoom=Math.max(11,Math.min(55,zoom+e.deltaY*.018))},{passive:true});
-const clock=new THREE.Clock();let accumulator=0,service=0;
-function tick(){requestAnimationFrame(tick);let dt=Math.min(clock.getDelta(),.05);accumulator+=dt;service+=dt;
-const speed=dt*15;if(keys.has('w')||keys.has('arrowup'))player.position.z-=speed;if(keys.has('s')||keys.has('arrowdown'))player.position.z+=speed;if(keys.has('a')||keys.has('arrowleft'))player.position.x-=speed;if(keys.has('d')||keys.has('arrowright'))player.position.x+=speed;
-player.position.x=Math.max(-165,Math.min(165,player.position.x));player.position.z=Math.max(-145,Math.min(145,player.position.z));
-for(const p of people){p.obj.position.x+=p.speed*p.dir*dt*60;if(Math.abs(p.obj.position.x)>165)p.dir*=-1;p.obj.rotation.y=p.dir<0?Math.PI/2:-Math.PI/2}
-for(const v of vehicles){for(const o of [v.body,v.wheel1,v.wheel2]){o.position.x+=v.dir*v.speed*dt*60;if(Math.abs(o.position.x)>170)o.position.x=-Math.sign(o.position.x)*170}}
-state.minute+=dt*3;if(state.minute>=1440){state.minute-=1440;state.day++;state.cash-=250000+state.staff*160000;state.stock=Math.max(0,state.stock-3);localStorage.setItem(saveKey,JSON.stringify(state))}
-if(service>5){service=0;const h=Math.floor(state.minute/60);if((h>=10||h<=0)&&state.stock>0){let guests=Math.min(state.tables,Math.max(1,Math.floor(state.staff*1.3)));state.served+=guests;state.cash+=guests*(90000+Math.round(state.reputation*450));state.stock=Math.max(0,state.stock-guests);state.reputation=Math.min(100,state.reputation+.03)}update()}
-const daylight=Math.sin((state.minute/1440)*Math.PI*2-Math.PI/2);scene.background.set(daylight>-.2?'#a5cce0':'#182d46');sun.intensity=daylight>-.2?2.3:.25;
-camera.position.set(player.position.x+Math.sin(yaw)*zoom,zoom*.68,player.position.z+Math.cos(yaw)*zoom);camera.lookAt(player.position.x,2,player.position.z);
-renderer.render(scene,camera)}
+const clock=new THREE.Clock();let simAccumulator=0;
+function tick(){
+ requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);
+ const speed=dt*15;
+ if(keys.has('w')||keys.has('arrowup'))player.position.z-=speed;
+ if(keys.has('s')||keys.has('arrowdown'))player.position.z+=speed;
+ if(keys.has('a')||keys.has('arrowleft'))player.position.x-=speed;
+ if(keys.has('d')||keys.has('arrowright'))player.position.x+=speed;
+ player.position.x=Math.max(-165,Math.min(165,player.position.x));player.position.z=Math.max(-145,Math.min(145,player.position.z));
+ for(const p of people){
+  const phase=npcActivity(p.role,state.minute);p.obj.visible=p.i<npcPopulation(state.minute);
+  if(phase!==p.activity){p.activity=phase;p.target=npcDestination(p,phase)}
+  if(p.activity==='commute'||p.activity==='leisure'||p.activity==='shop'){
+   p.target.x+=p.dir*dt*3;
+   if(p.target.x>155||p.target.x< -155)p.dir*=-1;
+  }
+  const dx=p.target.x-p.obj.position.x,dz=p.target.z-p.obj.position.z;
+  const dist=Math.hypot(dx,dz);
+  if(dist>.2){const move=Math.min(dist,p.speed*dt*60);p.obj.position.x+=dx/dist*move;p.obj.position.z+=dz/dist*move;p.obj.rotation.y=Math.atan2(dx,dz)}
+ }
+ for(const v of vehicles){for(const o of [v.body,v.wheel1,v.wheel2]){o.position.x+=v.dir*v.speed*dt*60;if(Math.abs(o.position.x)>170)o.position.x=-Math.sign(o.position.x)*170}}
+ for(const g of guestAvatars.values()){
+  const target=g.userData.target;if(!target)continue;const dx=target.x-g.position.x,dz=target.z-g.position.z,dist=Math.hypot(dx,dz);
+  if(dist>.15){const move=Math.min(dist,dt*9);g.position.x+=move*dx/dist;g.position.z+=move*dz/dist}
+ }
+ simAccumulator+=dt*3;
+ if(simAccumulator>=1){const whole=Math.floor(simAccumulator);simAccumulator-=whole;
+  const previousDay=state.day;advanceSimulation(state,whole);syncGuests();update();
+  if(state.day!==previousDay)localStorage.setItem(saveKey,JSON.stringify(state));
+ }
+ const daylight=Math.sin((state.minute/1440)*Math.PI*2-Math.PI/2);
+ scene.background.set(daylight>-.2?(state.rain?'#778a9b':'#a5cce0'):'#182d46');
+ sun.intensity=daylight>-.2?(state.rain?.8:2.3):.25;
+ camera.position.set(player.position.x+Math.sin(yaw)*zoom,zoom*.68,player.position.z+Math.cos(yaw)*zoom);
+ camera.lookAt(player.position.x,2,player.position.z);renderer.render(scene,camera)
+}
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
 window.addEventListener('resize',resize);resize();update();tick();
 </script></body></html>
