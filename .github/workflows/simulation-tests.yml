@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: '22'
       - name: Check JavaScript syntax
-        run: node --check src/simulation.mjs
+        run: |
+          node --check src/simulation.mjs
+          node --check src/restaurant-media.mjs
       - name: Run zero-dependency simulation tests
-        run: node --test tests/simulation.test.mjs
+        run: node --test tests/*.test.mjs
