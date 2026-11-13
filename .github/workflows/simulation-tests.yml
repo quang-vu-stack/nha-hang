@@ -16,6 +16,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check JavaScript syntax
-        run: node --check src/simulation.mjs
+        run: |
+          node --check src/simulation.mjs
+          node --check src/world/asset-loader.mjs
+          node --check src/world/hanoi-scene.mjs
       - name: Run zero-dependency simulation tests
         run: node --test tests/simulation.test.mjs
