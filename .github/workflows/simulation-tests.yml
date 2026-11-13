@@ -1,0 +1,21 @@
+name: VIETNAM LIFE 3D tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check src/simulation.mjs
+      - name: Run zero-dependency simulation tests
+        run: node --test tests/simulation.test.mjs
