@@ -12,14 +12,16 @@
 <div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang ngồi trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
 <h2>ĐƠN HÀNG ĐANG XỬ LÝ</h2><div class="orders" id="orders">Chưa có khách</div>
 <h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
-<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
 <p style="font-size:12px">Cảnh Hà Nội 3D cách điệu (chưa phải bản đồ 1:1). NPC có lịch sinh hoạt; khách đặt món, bếp nấu và doanh thu tính theo đơn.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
 <div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Dân cư theo giờ, khách vào bàn và bếp xử lý món.</div>
 <div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import * as THREE from 'three';
+import {installUserStools, installNpcGreeting} from './src/restaurant-media.mjs';
 import {createState,advanceSimulation,activeOrders,npcActivity,npcPopulation} from './src/simulation.mjs';
 const $=id=>document.getElementById(id);
 const saveKey='vietnam-life-3d-github-v01';
@@ -70,9 +72,11 @@ for(let x=-160;x<165;x+=17){tree(x,24);tree(x,-24)}
 function sign(txt,x,z){const c=document.createElement('canvas');c.width=512;c.height=120;const q=c.getContext('2d');q.fillStyle='#743b2c';q.fillRect(0,0,512,120);q.fillStyle='#ffe7b3';q.font='bold 43px Arial';q.textAlign='center';q.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(15,3.5),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));m.position.set(x,9,z);scene.add(m)}
 cube(28,8,19,'#d8b38b',-68,4,32);cube(30,1,20,'#a9533b',-68,8.7,32);sign('NHẬU PHỐ VIỆT',-68,42.1);
 ground(35,33,'#e1c6a1',-68,30,.07);
-const tables=[];
-function makeTable(i){const cols=5;let tx=-81+(i%cols)*6.3,tz=15+Math.floor(i/cols)*6;cyl(1.4,.8,'#754734',tx,.65,tz);cyl(.35,.7,'#604536',tx+2,.35,tz);cyl(.35,.7,'#604536',tx-2,.35,tz);tables.push([tx,tz])}
+const tables=[], fallbackStools=[];
+function makeTable(i){const cols=5;let tx=-81+(i%cols)*6.3,tz=15+Math.floor(i/cols)*6;cyl(1.4,.8,'#754734',tx,.65,tz);fallbackStools.push(cyl(.35,.7,'#604536',tx+2,.35,tz),cyl(.35,.7,'#604536',tx-2,.35,tz));tables.push([tx,tz])}
 for(let i=0;i<state.tables;i++)makeTable(i);
+installUserStools({scene,THREE,tables,fallbackStools,notify:toast});
+installNpcGreeting({button:$('greetNpc'),notify:toast});
 function person(color,x,z,scale=1){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.62,.48,2,9),mat(color));body.position.y=2;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#e6ae89'));head.position.y=3.45;g.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#252e36'));hair.position.y=3.77;hair.scale.set(1,.5,1);g.add(hair);g.position.set(x,0,z);g.scale.setScalar(scale);scene.add(g);return g}
 const people=[];const colors=['#36739b','#bc6a60','#728a6c','#b59158','#676f9b','#a35f89','#db9c55'];
 const roles=['student','worker','shopkeeper','delivery','resident','worker','student'];

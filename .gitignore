@@ -1,0 +1,7 @@
+# Keep generated voice audio local until its license for public distribution is confirmed.
+assets/audio/npc-greeting-vien.mp3
+# Local editor files and secrets
+.env
+.env.local
+node_modules/
+.DS_Store
