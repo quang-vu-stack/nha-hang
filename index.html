@@ -1,153 +1,173 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội V0.3</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#091622;color:#ecf4fa;font:14px system-ui,Arial;overflow:hidden}#scene{position:fixed;inset:0}
-#panel{position:fixed;left:16px;top:16px;bottom:16px;width:292px;padding:18px;background:#101e2ddd;border:1px solid #ffffff28;backdrop-filter:blur(18px);border-radius:20px;overflow:auto;box-shadow:0 16px 55px #0006}h1{font-size:21px;line-height:1.15;margin:0 0 8px}h2{font-size:13px;color:#9bb3c8;margin:18px 0 10px}p{color:#afc0cf;line-height:1.6;margin:7px 0 12px}.accent{color:#f8c879}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:12px;background:#ffffff0c;border:1px solid #ffffff18;border-radius:12px}.stat b{display:block;font-size:17px;margin-top:5px}.stat small{color:#b0c5d5}button{border:1px solid #ffffff1b;border-radius:11px;background:#20364a;color:#fff;padding:11px 12px;cursor:pointer;font:inherit;font-weight:600}button:hover{background:#385772}.actions{display:grid;gap:8px}.primary{background:#a95d34}.primary:hover{background:#c27748}.top{position:fixed;right:17px;top:17px;background:#102436d9;padding:12px 18px;border-radius:14px;border:1px solid #ffffff24}.bottom{position:fixed;bottom:18px;right:16px;background:#102436d9;padding:13px;border:1px solid #ffffff22;border-radius:14px;max-width:330px;line-height:1.6}.pill{display:inline-block;color:#a6efc6;background:#19544088;border-radius:15px;padding:3px 8px;font-size:11px}#mapModal{display:none;position:fixed;inset:5%;z-index:5;background:#142235;border:1px solid #ffffff33;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px #0009}#map{height:calc(100% - 59px)}#mapHeader{padding:10px 15px;display:flex;align-items:center;justify-content:space-between}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:12px 20px;background:#0b2b37e8;border:1px solid #ffffff44;border-radius:14px;display:none;z-index:9;max-width:85vw;text-align:center}@media(max-width:700px){#panel{width:205px;padding:10px;left:7px;top:7px;bottom:7px;border-radius:13px}h1{font-size:16px}.stat{padding:7px}.stat b{font-size:13px}.top{top:7px;right:7px;padding:8px;font-size:11px}.bottom{right:7px;bottom:7px;max-width:155px;font-size:11px;padding:8px}button{padding:9px 7px;font-size:12px}}
-.orders{white-space:pre-line;font-size:12px;line-height:1.6;color:#d9e8ed;background:#0a19299a;border-radius:10px;padding:10px;max-height:112px;overflow-y:auto}.activity{white-space:pre-line;font-size:11px;line-height:1.6;color:#b2c9d5;max-height:110px;overflow-y:auto}.sim-box{padding:8px 10px;background:#31504488;border-radius:9px;margin-top:10px;font-size:12px;color:#d5efdd}
+#panel{position:fixed;left:16px;top:16px;bottom:16px;width:320px;padding:18px;background:#101e2ddd;border:1px solid #ffffff28;backdrop-filter:blur(18px);border-radius:20px;overflow:auto;box-shadow:0 16px 55px #0006}h1{font-size:21px;line-height:1.15;margin:0 0 8px}h2{font-size:12px;letter-spacing:.04em;color:#9bb3c8;margin:16px 0 8px}p{color:#afc0cf;line-height:1.55;margin:6px 0 10px}.accent{color:#f8c879}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:10px 12px;background:#ffffff0c;border:1px solid #ffffff18;border-radius:12px}.stat b{display:block;font-size:16px;margin-top:4px}.stat small{color:#b0c5d5}button{border:1px solid #ffffff1b;border-radius:11px;background:#20364a;color:#fff;padding:10px 12px;cursor:pointer;font:inherit;font-weight:600}button:hover{background:#385772}.actions{display:grid;gap:7px}.primary{background:#a95d34}.primary:hover{background:#c27748}.top{position:fixed;right:17px;top:17px;background:#102436d9;padding:12px 18px;border-radius:14px;border:1px solid #ffffff24}.bottom{position:fixed;bottom:18px;right:16px;background:#102436d9;padding:13px;border:1px solid #ffffff22;border-radius:14px;max-width:340px;line-height:1.6}.pill{display:inline-block;color:#a6efc6;background:#19544088;border-radius:15px;padding:3px 9px;font-size:11px}#mapModal{display:none;position:fixed;inset:5%;z-index:5;background:#142235;border:1px solid #ffffff33;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px #0009}#map{height:calc(100% - 59px)}#mapHeader{padding:10px 15px;display:flex;align-items:center;justify-content:space-between}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:12px 20px;background:#0b2b37e8;border:1px solid #ffffff44;border-radius:14px;display:none;z-index:9;max-width:85vw;text-align:center}@media(max-width:700px){#panel{width:220px;padding:10px;left:7px;top:7px;bottom:7px;border-radius:13px}h1{font-size:16px}.stat{padding:7px}.stat b{font-size:13px}.top{top:7px;right:7px;padding:8px;font-size:11px}.bottom{right:7px;bottom:7px;max-width:165px;font-size:11px;padding:8px}button{padding:8px 7px;font-size:12px}}
+.orders,.menu-box{white-space:pre-line;font-size:12px;line-height:1.55;color:#d9e8ed;background:#0a19299a;border-radius:10px;padding:10px;max-height:118px;overflow-y:auto}.activity{white-space:pre-line;font-size:11px;line-height:1.55;color:#b2c9d5;max-height:110px;overflow-y:auto}.sim-box{padding:9px 11px;background:#31504488;border-radius:10px;margin-top:10px;font-size:12px;line-height:1.65;color:#d5efdd}
 </style></head>
 <body><div id="scene"></div><aside id="panel">
-<div class="pill">V0.2 • PRE-ALPHA</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
+<div class="pill">V0.3 • HANOI LIVING WORLD</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
 <div class="stats"><div class="stat"><small>💰 Tiền mặt</small><b id="cash"></b></div><div class="stat"><small>🍽️ Khách phục vụ</small><b id="served"></b></div><div class="stat"><small>👥 Nhân viên</small><b id="staff"></b></div><div class="stat"><small>📦 Nguyên liệu</small><b id="stock"></b></div><div class="stat"><small>⭐ Danh tiếng</small><b id="reputation"></b></div><div class="stat"><small>🏮 Bàn ăn</small><b id="tables"></b></div></div>
-<div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang ngồi trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
-<h2>ĐƠN HÀNG ĐANG XỬ LÝ</h2><div class="orders" id="orders">Chưa có khách</div>
+<div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>📉 Chi phí & giá vốn: <b id="dayCosts">0 ₫</b><br>📈 Lợi nhuận ròng: <b id="dayProfit">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
+<h2>NHÂN SỰ: ĐẦU BẾP • PHỤC VỤ • THU NGÂN</h2><div class="orders" id="staffBreakdown">Đang phân ca nhân sự...</div>
+<h2>ĐƠN HÀNG & BÀN NHẬU</h2><div class="orders" id="orders">Chưa có khách</div>
+<h2>THỰC ĐƠN & TỒN KHO NGUYÊN LIỆU (VND)</h2><div class="menu-box" id="menuList">Đang tải thực đơn...</div>
+<h2>NHỊP SỐNG CƯ DÂN HÀ NỘI</h2><div class="orders" id="npcSummary">Đang cập nhật lịch trình cư dân...</div>
 <h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
-<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
-<p style="font-size:12px">Cảnh Hà Nội 3D cách điệu (chưa phải bản đồ 1:1). NPC có lịch sinh hoạt; khách đặt món, bếp nấu và doanh thu tính theo đơn.</p>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.3 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
-<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Dân cư theo giờ, khách vào bàn và bếp xử lý món.</div>
+<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán (đến Quầy Lễ Tân để nghe chào khi bật tiếng)<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Bếp nấu • Phục vụ bưng bàn • Thu ngân tính tiền VND.</div>
 <div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
-import {createState,advanceSimulation,activeOrders,npcActivity,npcPopulation} from './src/simulation.mjs';
+import * as THREE from 'three';
+import { installUserStools, installNpcGreeting } from './src/restaurant-media.mjs';
+import {
+  MENU, INGREDIENT_LABELS, activityLabel,
+  advanceSimulation, activeOrders, npcPopulation,
+  countStaffByRole, restockIngredients, hireStaffMember,
+  calculateProfit, saveGameState, loadGameState
+} from './src/simulation.mjs';
+import { createHanoiScene, RESTAURANT_ZONES } from './src/world/hanoi-scene.mjs';
+
 const $=id=>document.getElementById(id);
-const saveKey='vietnam-life-3d-github-v01';
-let savedState={};try{savedState=JSON.parse(localStorage.getItem(saveKey))||{}}catch{}
-let state=createState(savedState);
-let timer;function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(timer);timer=setTimeout(()=>$('toast').style.display='none',3000)}
-const money=n=>Math.round(n).toLocaleString('vi-VN')+' ₫';
-const phaseName={queued:'Đợi chế biến',cooking:'Đang nấu',serving:'Đang phục vụ',eating:'Đang ăn'};
+const loaded=loadGameState(window.localStorage);
+let state=loaded.state;
+let timer;
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(timer);timer=setTimeout(()=>$('toast').style.display='none',3000)}
+if(loaded.recovered)toast('Đã khôi phục dữ liệu từ bản sao lưu an toàn');
+
+const money=n=>Math.round(n||0).toLocaleString('vi-VN')+' ₫';
+const phaseName={
+  queued:'Chọn món / Đợi bếp',
+  cooking:'Đầu bếp đang nấu',
+  serving:'Phục vụ bưng ra bàn',
+  eating:'Khách đang thưởng thức',
+  paying:'Thu ngân đang thanh toán'
+};
+
 function update(){
- for(const k of ['cash','served','staff','stock','reputation','tables']) $(k).textContent=k==='cash'?money(state[k]):k==='reputation'?state[k].toFixed(1):state[k];
+ for(const k of ['cash','served','staff','stock','reputation','tables']){
+  $(k).textContent=k==='cash'?money(state[k]):k==='reputation'?state[k].toFixed(1):state[k];
+ }
  $('clock').textContent=String(Math.floor(state.minute/60)%24).padStart(2,'0')+':'+String(Math.floor(state.minute%60)%60).padStart(2,'0');
- $('day').textContent='Ngày '+state.day;$('condition').textContent=state.rain?'🌧️ Mưa Hà Nội':'☀️ Hà Nội';
+ $('day').textContent='Ngày '+state.day;
+ $('condition').textContent=state.rain?'🌧️ Mưa Hà Nội':'☀️ Hà Nội';
  const active=activeOrders(state);
- $('queue').textContent=active.length; $('dayRevenue').textContent=money(state.todayRevenue);
- $('citizens').textContent=npcPopulation(state.minute);$('shopStatus').textContent=state.open?'Đang mở cửa':'Đã tạm đóng';
+ const totalCosts=(state.todayCosts||0)+(state.todayIngredientCost||0);
+ const profit=calculateProfit(state);
+ $('queue').textContent=active.length;
+ $('dayRevenue').textContent=money(state.todayRevenue);
+ $('dayCosts').textContent=money(totalCosts);
+ $('dayProfit').textContent=(profit>=0?'+':'')+money(profit);
+ $('citizens').textContent=npcPopulation(state.minute);
+ $('shopStatus').textContent=state.open?'Đang mở cửa':'Đã tạm đóng';
  $('toggleShop').textContent=state.open?'🚪 Tạm đóng cửa quán':'🏮 Mở cửa quán';
- $('orders').textContent=active.length?active.slice(0,9).map(o=>'Bàn '+(o.table+1)+' • '+o.customer+' — '+(phaseName[o.status]||o.status)).join('\n'):'Hiện chưa có đơn hàng';
+
+ const counts=countStaffByRole(state);
+ const busyList=(state.staffRoster||[]).filter(m=>m.status==='busy').map(m=>`${m.label} ${m.name} (Đơn #${m.orderId})`).join(', ');
+ $('staffBreakdown').textContent=`👨‍🍳 Đầu bếp: ${counts.chef} | 💁 Phục vụ: ${counts.waiter} | 🧾 Thu ngân: ${counts.cashier}\n`+(busyList?`Đang bận: ${busyList}`:'Tất cả nhân viên đang sẵn sàng');
+
+ $('orders').textContent=active.length
+  ? active.slice(0,9).map(o=>`Bàn ${o.table+1} • ${o.customer}: ${o.dishName||'Món nhậu'} (${money(o.total)}) — ${phaseName[o.status]||o.status}`).join('\n')
+  : 'Hiện chưa có đơn hàng';
+
+ const ingLines=Object.entries(state.ingredients||{}).map(([k,v])=>`${INGREDIENT_LABELS[k]||k}: ${v}`).join(' • ');
+ const dishLines=MENU.map(d=>`• ${d.name}: ${money(d.price)} (vốn ${money(d.cost)})`).join('\n');
+ $('menuList').textContent=`Kho: ${ingLines}\n${dishLines}`;
+
+ const actCounts={};
+ for(const c of (state.citizens||[]))actCounts[c.activity]=(actCounts[c.activity]||0)+1;
+ $('npcSummary').textContent=Object.entries(actCounts).map(([k,v])=>`${activityLabel[k]||k}: ${v} người`).join(' • ');
+
  $('logs').textContent=state.log.length?state.log.join('\n'):'Chờ khách đến quán...';
 }
-function save(){localStorage.setItem(saveKey,JSON.stringify(state));toast('Đã lưu trên trình duyệt này')}
-function buy(cost,fn){if(state.cash<cost)return toast('Không đủ tiền');state.cash-=cost;fn();update();localStorage.setItem(saveKey,JSON.stringify(state))}
-$('buy').onclick=()=>buy(800000,()=>{state.stock+=100;toast('Đã nhập hàng')});
-$('hire').onclick=()=>buy(2000000,()=>{state.staff++;addStaffAvatar();toast('Đã tuyển nhân viên')});
-$('advert').onclick=()=>buy(600000,()=>{state.reputation=Math.min(100,state.reputation+4);toast('Đã quảng cáo nhà hàng')});
-$('table').onclick=()=>buy(1500000,()=>{state.tables++;makeTable(state.tables);toast('Đã bổ sung bàn')});
-$('weather').onclick=()=>{state.rain=!state.rain;update()};$('save').onclick=save;
-$('toggleShop').onclick=()=>{state.open=!state.open;toast(state.open?'Đã mở quán đón khách':'Tạm đóng cửa, xử lý đơn còn lại');save();update()};
-let map;const cities=[['Hà Nội',21.0285,105.8542],['Hải Phòng',20.8449,106.6881],['Đà Nẵng',16.0544,108.2022],['Huế',16.4637,107.5909],['TP. Hồ Chí Minh',10.8231,106.6297],['Cần Thơ',10.0452,105.7469],['Thanh Hóa',19.8075,105.7764]];
-$('showMap').onclick=()=>{$('mapModal').style.display='block';if(!map){map=L.map('map').setView([16.3,107.0],6);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);cities.forEach(c=>L.marker([c[1],c[2]]).addTo(map).bindPopup(c[0]+' — khu vực tương lai'))}setTimeout(()=>map.invalidateSize(),50)};
-$('closeMap').onclick=()=>$('mapModal').style.display='none';
-const scene=new THREE.Scene();scene.background=new THREE.Color('#a5cce0');scene.fog=new THREE.FogExp2('#a5cce0',.006);
-const camera=new THREE.PerspectiveCamera(55,1,.1,700);const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;$('scene').appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x536578,2));const sun=new THREE.DirectionalLight(0xffe9c8,2.5);sun.position.set(30,70,35);sun.castShadow=true;scene.add(sun);
-const mats=new Map();function mat(c){if(!mats.has(c))mats.set(c,new THREE.MeshStandardMaterial({color:c,roughness:.85}));return mats.get(c)}
-function cube(w,h,d,c,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
-function ground(w,d,c,x,z,y=0){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;scene.add(m)}
-function cyl(r,h,c,x,y,z){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,10),mat(c));m.position.set(x,y,z);m.castShadow=true;scene.add(m);return m}
-function sphere(r,c,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),mat(c));m.position.set(x,y,z);m.castShadow=true;scene.add(m);return m}
-ground(350,310,'#a3b597',0,0);ground(350,30,'#3c454d',0,0,.02);ground(36,310,'#3c454d',35,0,.025);
-for(let x=-165;x<175;x+=13)cube(5,.05,.3,'#e1dab4',x,.04,0);
-for(let z=-145;z<155;z+=13)cube(.3,.05,5,'#e1dab4',35,.06,z);
-ground(175,76,'#d1c9b8',-82,60,.03);ground(150,76,'#d4c9b7',-93,-61,.03);
-function building(x,z,w,d,h,color){cube(w,h,d,color,x,h/2,z);cube(w+.7,.7,d+.7,'#374e56',x,h+.4,z);for(let j=0;j<3;j++){const wx=x-w/2+(j+1)*w/4;for(let k=1;k<Math.ceil(h/5);k++)cube(1.9,2.3,.12,'#9dbfd0',wx,k*4.2,z+d/2+.07)}}
-for(let i=0;i<11;i++){let x=-162+i*15;building(x,-55,12,14,11+(i%4)*4,['#bb8774','#b8a69a','#87969b','#c6a979'][i%4]);building(x,55,12,14,10+(i%5)*3,['#b3a18c','#a2b9a4','#bd8c81'][i%3])}
-function tree(x,z){cyl(.35,5,'#74634a',x,2.5,z);sphere(3.2,'#57845c',x,6.5,z);sphere(2.2,'#4d764f',x+1,8,z-.5)}
-for(let x=-160;x<165;x+=17){tree(x,24);tree(x,-24)}
-function sign(txt,x,z){const c=document.createElement('canvas');c.width=512;c.height=120;const q=c.getContext('2d');q.fillStyle='#743b2c';q.fillRect(0,0,512,120);q.fillStyle='#ffe7b3';q.font='bold 43px Arial';q.textAlign='center';q.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(15,3.5),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));m.position.set(x,9,z);scene.add(m)}
-cube(28,8,19,'#d8b38b',-68,4,32);cube(30,1,20,'#a9533b',-68,8.7,32);sign('NHẬU PHỐ VIỆT',-68,42.1);
-ground(35,33,'#e1c6a1',-68,30,.07);
-const tables=[];
-function makeTable(i){const cols=5;let tx=-81+(i%cols)*6.3,tz=15+Math.floor(i/cols)*6;cyl(1.4,.8,'#754734',tx,.65,tz);cyl(.35,.7,'#604536',tx+2,.35,tz);cyl(.35,.7,'#604536',tx-2,.35,tz);tables.push([tx,tz])}
-for(let i=0;i<state.tables;i++)makeTable(i);
-function person(color,x,z,scale=1){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.62,.48,2,9),mat(color));body.position.y=2;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#e6ae89'));head.position.y=3.45;g.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#252e36'));hair.position.y=3.77;hair.scale.set(1,.5,1);g.add(hair);g.position.set(x,0,z);g.scale.setScalar(scale);scene.add(g);return g}
-const people=[];const colors=['#36739b','#bc6a60','#728a6c','#b59158','#676f9b','#a35f89','#db9c55'];
-const roles=['student','worker','shopkeeper','delivery','resident','worker','student'];
-for(let i=0;i<35;i++){
- const x=-150+(i*37)%300,z=i%2?21:-21;
- people.push({i,role:roles[i%roles.length],activity:'',obj:person(colors[i%colors.length],x,z,.79+(i%4)*.06),speed:.07+(i%5)*.013,target:{x,z},dir:1});
-}
-function npcDestination(p, activity){
- const i=p.i;
- if(activity==='home'||activity==='sleep')return {x:-150+(i*19)%295,z:i%2?43:-43};
- if(activity==='work')return {x:-140+(i*23)%280,z:i%2?26:-26};
- if(activity==='lunch')return {x:-80+(i%8)*4,z:18+(i%3)*3};
- if(activity==='shop'||activity==='leisure')return {x:-108+(i%10)*10,z:21+(i%2)*3};
- return {x:-148+(i*37)%296,z:i%2?21:-21};
-}
-let staffAvatars=0;
-function addStaffAvatar(){person('#ab4935',-80+(staffAvatars%7)*3.3,34+Math.floor(staffAvatars/7)*3,.85);staffAvatars++}
-for(let i=0;i<state.staff;i++)addStaffAvatar();
-const player=person('#2c668d',-50,14,1);sphere(.3,'#ffd15b',-50,4.6,14);
-const guestAvatars=new Map();
-function syncGuests(){
- const current=activeOrders(state);
- const ids=new Set(current.map(o=>o.id));
- for(const o of current){
-  const spot=tables[o.table];if(!spot)continue;
-  if(!guestAvatars.has(o.id))guestAvatars.set(o.id,person(colors[o.id%colors.length],-58,12,.78));
-  const avatar=guestAvatars.get(o.id);
-  avatar.userData.target={x:spot[0]+.8,z:spot[1]+.7};
+
+const world=createHanoiScene(THREE,$('scene'),state);
+const {scene,tables,player}=world;
+const fallbackStools=[];
+for(const s of world.fallbackStools)fallbackStools.push(s);
+installUserStools({scene,THREE,tables,fallbackStools,notify:toast});
+const greetingCtrl=installNpcGreeting({button:$('greetNpc'),notify:toast});
+
+function save(){saveGameState(window.localStorage,state);toast('Đã lưu an toàn kèm mã kiểm tra checksum')}
+
+$('buy').onclick=()=>{
+ if(!restockIngredients(state,100,800000))return toast('Không đủ tiền nhập nguyên liệu');
+ saveGameState(window.localStorage,state);update();toast('Đã nhập thêm 100 phần nguyên liệu');
+};
+$('hire').onclick=()=>{
+ const m=hireStaffMember(state,null,2000000);
+ if(!m)return toast('Không đủ tiền hoặc đã đạt tối đa nhân sự');
+ world.syncStaffAvatars(state);saveGameState(window.localStorage,state);update();
+ toast(`Đã tuyển ${m.label} ${m.name}`);
+};
+$('advert').onclick=()=>{
+ if(state.cash<600000)return toast('Không đủ tiền');
+ state.cash-=600000;state.todayCosts+=600000;state.reputation=Math.min(100,state.reputation+4);
+ saveGameState(window.localStorage,state);update();toast('Đã chạy chiến dịch quảng cáo');
+};
+$('table').onclick=()=>{
+ if(state.cash<1500000)return toast('Không đủ tiền');
+ state.cash-=1500000;state.todayCosts+=1500000;state.tables++;world.makeTable(state.tables-1);
+ for(let i=fallbackStools.length;i<world.fallbackStools.length;i++)fallbackStools.push(world.fallbackStools[i]);
+ saveGameState(window.localStorage,state);update();toast('Đã bổ sung thêm bàn nhậu');
+};
+$('weather').onclick=()=>{state.rain=!state.rain;update()};
+$('save').onclick=save;
+$('toggleShop').onclick=()=>{
+ state.open=!state.open;
+ toast(state.open?'Đã mở quán đón khách':'Tạm đóng cửa, xử lý đơn còn lại');
+ saveGameState(window.localStorage,state);update();
+};
+
+let map;
+const cities=[['Hà Nội',21.0285,105.8542],['Hải Phòng',20.8449,106.6881],['Đà Nẵng',16.0544,108.2022],['Huế',16.4637,107.5909],['TP. Hồ Chí Minh',10.8231,106.6297],['Cần Thơ',10.0452,105.7469],['Thanh Hóa',19.8075,105.7764]];
+$('showMap').onclick=()=>{
+ $('mapModal').style.display='block';
+ if(!map){
+  map=L.map('map').setView([16.3,107.0],6);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+  cities.forEach(c=>L.marker([c[1],c[2]]).addTo(map).bindPopup(c[0]+' — khu vực tương lai'));
  }
- for(const [id,g] of guestAvatars)if(!ids.has(id)){scene.remove(g);guestAvatars.delete(id)}
-}
-syncGuests();
-const vehicles=[];for(let i=0;i<11;i++){const x=-165+i*32,z=i%2?-5:5;const body=cube(2,1.1,1.6,colors[i%colors.length],x,1.2,z);const wheel1=cyl(.7,.25,'#20262c',x-.7,.6,z);const wheel2=cyl(.7,.25,'#20262c',x+.7,.6,z);vehicles.push({body,wheel1,wheel2,dir:i%2?-1:1,speed:.15+i*.012})}
-let keys=new Set(),yaw=0.7,zoom=24,drag=false,last=0;
+ setTimeout(()=>map.invalidateSize(),50);
+};
+$('closeMap').onclick=()=>$('mapModal').style.display='none';
+
+const keys=new Set();
+const cameraControl={yaw:0.7,zoom:24};
+let drag=false,last=0;
 window.addEventListener('keydown',e=>{keys.add(e.key.toLowerCase());if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault()});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX});window.addEventListener('pointerup',()=>drag=false);
-window.addEventListener('pointermove',e=>{if(drag){yaw+=(e.clientX-last)*.006;last=e.clientX}});
-renderer.domElement.addEventListener('wheel',e=>{zoom=Math.max(11,Math.min(55,zoom+e.deltaY*.018))},{passive:true});
-const clock=new THREE.Clock();let simAccumulator=0;
+world.renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX});
+window.addEventListener('pointerup',()=>drag=false);
+window.addEventListener('pointermove',e=>{if(drag){cameraControl.yaw+=(e.clientX-last)*.006;last=e.clientX}});
+world.renderer.domElement.addEventListener('wheel',e=>{cameraControl.zoom=Math.max(11,Math.min(55,cameraControl.zoom+e.deltaY*.018))},{passive:true});
+
+const clock=new THREE.Clock();
+let simAccumulator=0;
 function tick(){
- requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);
- const speed=dt*15;
- if(keys.has('w')||keys.has('arrowup'))player.position.z-=speed;
- if(keys.has('s')||keys.has('arrowdown'))player.position.z+=speed;
- if(keys.has('a')||keys.has('arrowleft'))player.position.x-=speed;
- if(keys.has('d')||keys.has('arrowright'))player.position.x+=speed;
- player.position.x=Math.max(-165,Math.min(165,player.position.x));player.position.z=Math.max(-145,Math.min(145,player.position.z));
- for(const p of people){
-  const phase=npcActivity(p.role,state.minute);p.obj.visible=p.i<npcPopulation(state.minute);
-  if(phase!==p.activity){p.activity=phase;p.target=npcDestination(p,phase)}
-  if(p.activity==='commute'||p.activity==='leisure'||p.activity==='shop'){
-   p.target.x+=p.dir*dt*3;
-   if(p.target.x>155||p.target.x< -155)p.dir*=-1;
-  }
-  const dx=p.target.x-p.obj.position.x,dz=p.target.z-p.obj.position.z;
-  const dist=Math.hypot(dx,dz);
-  if(dist>.2){const move=Math.min(dist,p.speed*dt*60);p.obj.position.x+=dx/dist*move;p.obj.position.z+=dz/dist*move;p.obj.rotation.y=Math.atan2(dx,dz)}
- }
- for(const v of vehicles){for(const o of [v.body,v.wheel1,v.wheel2]){o.position.x+=v.dir*v.speed*dt*60;if(Math.abs(o.position.x)>170)o.position.x=-Math.sign(o.position.x)*170}}
- for(const g of guestAvatars.values()){
-  const target=g.userData.target;if(!target)continue;const dx=target.x-g.position.x,dz=target.z-g.position.z,dist=Math.hypot(dx,dz);
-  if(dist>.15){const move=Math.min(dist,dt*9);g.position.x+=move*dx/dist;g.position.z+=move*dz/dist}
- }
+ requestAnimationFrame(tick);
+ const dt=Math.min(clock.getDelta(),.05);
  simAccumulator+=dt*3;
- if(simAccumulator>=1){const whole=Math.floor(simAccumulator);simAccumulator-=whole;
-  const previousDay=state.day;advanceSimulation(state,whole);syncGuests();update();
-  if(state.day!==previousDay)localStorage.setItem(saveKey,JSON.stringify(state));
+ if(simAccumulator>=1){
+  const whole=Math.floor(simAccumulator);
+  simAccumulator-=whole;
+  const previousDay=state.day;
+  advanceSimulation(state,whole);
+  world.syncGuests(state);
+  world.syncStaffAvatars(state);
+  update();
+  if(state.day!==previousDay)saveGameState(window.localStorage,state);
  }
- const daylight=Math.sin((state.minute/1440)*Math.PI*2-Math.PI/2);
- scene.background.set(daylight>-.2?(state.rain?'#778a9b':'#a5cce0'):'#182d46');
- sun.intensity=daylight>-.2?(state.rain?.8:2.3):.25;
- camera.position.set(player.position.x+Math.sin(yaw)*zoom,zoom*.68,player.position.z+Math.cos(yaw)*zoom);
- camera.lookAt(player.position.x,2,player.position.z);renderer.render(scene,camera)
+ world.stepFrame(state,dt,keys,cameraControl);
+ greetingCtrl.checkReceptionProximity(player.position,RESTAURANT_ZONES.reception);
 }
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
-window.addEventListener('resize',resize);resize();update();tick();
+window.addEventListener('resize',world.resize);
+world.resize();
+update();
+tick();
 </script></body></html>
