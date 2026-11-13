@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#091622;color:#ecf4fa;font:14px system-ui,Arial;overflow:hidden}#scene{position:fixed;inset:0}
+#panel{position:fixed;left:16px;top:16px;bottom:16px;width:292px;padding:18px;background:#101e2ddd;border:1px solid #ffffff28;backdrop-filter:blur(18px);border-radius:20px;overflow:auto;box-shadow:0 16px 55px #0006}h1{font-size:21px;line-height:1.15;margin:0 0 8px}h2{font-size:13px;color:#9bb3c8;margin:18px 0 10px}p{color:#afc0cf;line-height:1.6;margin:7px 0 12px}.accent{color:#f8c879}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:12px;background:#ffffff0c;border:1px solid #ffffff18;border-radius:12px}.stat b{display:block;font-size:17px;margin-top:5px}.stat small{color:#b0c5d5}button{border:1px solid #ffffff1b;border-radius:11px;background:#20364a;color:#fff;padding:11px 12px;cursor:pointer;font:inherit;font-weight:600}button:hover{background:#385772}.actions{display:grid;gap:8px}.primary{background:#a95d34}.primary:hover{background:#c27748}.top{position:fixed;right:17px;top:17px;background:#102436d9;padding:12px 18px;border-radius:14px;border:1px solid #ffffff24}.bottom{position:fixed;bottom:18px;right:16px;background:#102436d9;padding:13px;border:1px solid #ffffff22;border-radius:14px;max-width:330px;line-height:1.6}.pill{display:inline-block;color:#a6efc6;background:#19544088;border-radius:15px;padding:3px 8px;font-size:11px}#mapModal{display:none;position:fixed;inset:5%;z-index:5;background:#142235;border:1px solid #ffffff33;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px #0009}#map{height:calc(100% - 59px)}#mapHeader{padding:10px 15px;display:flex;align-items:center;justify-content:space-between}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:12px 20px;background:#0b2b37e8;border:1px solid #ffffff44;border-radius:14px;display:none;z-index:9;max-width:85vw;text-align:center}@media(max-width:700px){#panel{width:205px;padding:10px;left:7px;top:7px;bottom:7px;border-radius:13px}h1{font-size:16px}.stat{padding:7px}.stat b{font-size:13px}.top{top:7px;right:7px;padding:8px;font-size:11px}.bottom{right:7px;bottom:7px;max-width:155px;font-size:11px;padding:8px}button{padding:9px 7px;font-size:12px}}
+</style></head>
+<body><div id="scene"></div><aside id="panel">
+<div class="pill">V0.1 • PRE-ALPHA</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
+<div class="stats"><div class="stat"><small>💰 Tiền mặt</small><b id="cash"></b></div><div class="stat"><small>🍽️ Khách phục vụ</small><b id="served"></b></div><div class="stat"><small>👥 Nhân viên</small><b id="staff"></b></div><div class="stat"><small>📦 Nguyên liệu</small><b id="stock"></b></div><div class="stat"><small>⭐ Danh tiếng</small><b id="reputation"></b></div><div class="stat"><small>🏮 Bàn ăn</small><b id="tables"></b></div></div>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<p style="font-size:12px">Đây là cảnh quan 3D cách điệu, không phải bản đồ Hà Nội 1:1. NPC, giao thông và doanh thu là mô phỏng.</p>
+</aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
+<div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Dân cư, xe máy và khách quán hoạt động liên tục.</div>
+<div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+const $=id=>document.getElementById(id);
+const saveKey='vietnam-life-3d-github-v01';
+const start={cash:80000000,served:0,staff:3,stock:160,reputation:35,tables:6,minute:12*60,day:1,rain:false};
+let state={...start};try{const s=JSON.parse(localStorage.getItem(saveKey));if(s)state={...start,...s}}catch{}
+let timer;function toast(s){$('toast').textContent=s;$('toast').style.display='block';clearTimeout(timer);timer=setTimeout(()=>$('toast').style.display='none',3000)}
+const money=n=>Math.round(n).toLocaleString('vi-VN')+' ₫';
+function update(){for(const k of ['cash','served','staff','stock','reputation','tables'])$(k).textContent=k==='cash'?money(state[k]):state[k];$('clock').textContent=String(Math.floor(state.minute/60)%24).padStart(2,'0')+':'+String(Math.floor(state.minute%60)).padStart(2,'0');$('day').textContent='Ngày '+state.day;$('condition').textContent=state.rain?'🌧️ Mưa Hà Nội':'☀️ Hà Nội'}
+function save(){localStorage.setItem(saveKey,JSON.stringify(state));toast('Đã lưu trên trình duyệt này')}
+function buy(cost,fn){if(state.cash<cost)return toast('Không đủ tiền');state.cash-=cost;fn();update();localStorage.setItem(saveKey,JSON.stringify(state))}
+$('buy').onclick=()=>buy(800000,()=>{state.stock+=100;toast('Đã nhập hàng')});
+$('hire').onclick=()=>buy(2000000,()=>{state.staff++;toast('Đã tuyển nhân viên')});
+$('advert').onclick=()=>buy(600000,()=>{state.reputation=Math.min(100,state.reputation+4);toast('Đã quảng cáo nhà hàng')});
+$('table').onclick=()=>buy(1500000,()=>{state.tables++;makeTable(state.tables);toast('Đã bổ sung bàn')});
+$('weather').onclick=()=>{state.rain=!state.rain;update()};$('save').onclick=save;
+let map;const cities=[['Hà Nội',21.0285,105.8542],['Hải Phòng',20.8449,106.6881],['Đà Nẵng',16.0544,108.2022],['Huế',16.4637,107.5909],['TP. Hồ Chí Minh',10.8231,106.6297],['Cần Thơ',10.0452,105.7469],['Thanh Hóa',19.8075,105.7764]];
+$('showMap').onclick=()=>{$('mapModal').style.display='block';if(!map){map=L.map('map').setView([16.3,107.0],6);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);cities.forEach(c=>L.marker([c[1],c[2]]).addTo(map).bindPopup(c[0]+' — khu vực tương lai'))}setTimeout(()=>map.invalidateSize(),50)};
+$('closeMap').onclick=()=>$('mapModal').style.display='none';
+const scene=new THREE.Scene();scene.background=new THREE.Color('#a5cce0');scene.fog=new THREE.FogExp2('#a5cce0',.006);
+const camera=new THREE.PerspectiveCamera(55,1,.1,700);const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.shadowMap.enabled=true;$('scene').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x536578,2));const sun=new THREE.DirectionalLight(0xffe9c8,2.5);sun.position.set(30,70,35);sun.castShadow=true;scene.add(sun);
+const mats=new Map();function mat(c){if(!mats.has(c))mats.set(c,new THREE.MeshStandardMaterial({color:c,roughness:.85}));return mats.get(c)}
+function cube(w,h,d,c,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
+function ground(w,d,c,x,z,y=0){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat(c));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=true;scene.add(m)}
+function cyl(r,h,c,x,y,z){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,10),mat(c));m.position.set(x,y,z);m.castShadow=true;scene.add(m);return m}
+function sphere(r,c,x,y,z){const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),mat(c));m.position.set(x,y,z);m.castShadow=true;scene.add(m);return m}
+ground(350,310,'#a3b597',0,0);ground(350,30,'#3c454d',0,0,.02);ground(36,310,'#3c454d',35,0,.025);
+for(let x=-165;x<175;x+=13)cube(5,.05,.3,'#e1dab4',x,.04,0);
+for(let z=-145;z<155;z+=13)cube(.3,.05,5,'#e1dab4',35,.06,z);
+ground(175,76,'#d1c9b8',-82,60,.03);ground(150,76,'#d4c9b7',-93,-61,.03);
+function building(x,z,w,d,h,color){cube(w,h,d,color,x,h/2,z);cube(w+.7,.7,d+.7,'#374e56',x,h+.4,z);for(let j=0;j<3;j++){const wx=x-w/2+(j+1)*w/4;for(let k=1;k<Math.ceil(h/5);k++)cube(1.9,2.3,.12,'#9dbfd0',wx,k*4.2,z+d/2+.07)}}
+for(let i=0;i<11;i++){let x=-162+i*15;building(x,-55,12,14,11+(i%4)*4,['#bb8774','#b8a69a','#87969b','#c6a979'][i%4]);building(x,55,12,14,10+(i%5)*3,['#b3a18c','#a2b9a4','#bd8c81'][i%3])}
+function tree(x,z){cyl(.35,5,'#74634a',x,2.5,z);sphere(3.2,'#57845c',x,6.5,z);sphere(2.2,'#4d764f',x+1,8,z-.5)}
+for(let x=-160;x<165;x+=17){tree(x,24);tree(x,-24)}
+function sign(txt,x,z){const c=document.createElement('canvas');c.width=512;c.height=120;const q=c.getContext('2d');q.fillStyle='#743b2c';q.fillRect(0,0,512,120);q.fillStyle='#ffe7b3';q.font='bold 43px Arial';q.textAlign='center';q.fillText(txt,256,78);const t=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(15,3.5),new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));m.position.set(x,9,z);scene.add(m)}
+cube(28,8,19,'#d8b38b',-68,4,32);cube(30,1,20,'#a9533b',-68,8.7,32);sign('NHẬU PHỐ VIỆT',-68,42.1);
+ground(35,33,'#e1c6a1',-68,30,.07);
+const tables=[];
+function makeTable(i){const cols=5;let tx=-81+(i%cols)*6.3,tz=15+Math.floor(i/cols)*6;cyl(1.4,.8,'#754734',tx,.65,tz);cyl(.35,.7,'#604536',tx+2,.35,tz);cyl(.35,.7,'#604536',tx-2,.35,tz);tables.push([tx,tz])}
+for(let i=0;i<state.tables;i++)makeTable(i);
+function person(color,x,z,scale=1){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.62,.48,2,9),mat(color));body.position.y=2;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#e6ae89'));head.position.y=3.45;g.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.64,10,8),mat('#252e36'));hair.position.y=3.77;hair.scale.set(1,.5,1);g.add(hair);g.position.set(x,0,z);g.scale.setScalar(scale);scene.add(g);return g}
+const people=[];const colors=['#36739b','#bc6a60','#728a6c','#b59158','#676f9b','#a35f89','#db9c55'];
+for(let i=0;i<30;i++){const x=-150+Math.random()*300,z=i%3?20+Math.random()*3:-20-Math.random()*3;people.push({obj:person(colors[i%colors.length],x,z,.8+Math.random()*.2),speed:.035+Math.random()*.07,dir:Math.random()<.5?-1:1,base:z})}
+for(let i=0;i<state.staff;i++)person('#ab4935',-80+i*4,35,.9);
+const player=person('#2c668d',-50,14,1);sphere(.3,'#ffd15b',-50,4.6,14);
+const vehicles=[];for(let i=0;i<11;i++){const x=-165+i*32,z=i%2?-5:5;const body=cube(2,1.1,1.6,colors[i%colors.length],x,1.2,z);const wheel1=cyl(.7,.25,'#20262c',x-.7,.6,z);const wheel2=cyl(.7,.25,'#20262c',x+.7,.6,z);vehicles.push({body,wheel1,wheel2,dir:i%2?-1:1,speed:.15+i*.012})}
+let keys=new Set(),yaw=0.7,zoom=24,drag=false,last=0;
+window.addEventListener('keydown',e=>{keys.add(e.key.toLowerCase());if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault()});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX});window.addEventListener('pointerup',()=>drag=false);
+window.addEventListener('pointermove',e=>{if(drag){yaw+=(e.clientX-last)*.006;last=e.clientX}});
+renderer.domElement.addEventListener('wheel',e=>{zoom=Math.max(11,Math.min(55,zoom+e.deltaY*.018))},{passive:true});
+const clock=new THREE.Clock();let accumulator=0,service=0;
+function tick(){requestAnimationFrame(tick);let dt=Math.min(clock.getDelta(),.05);accumulator+=dt;service+=dt;
+const speed=dt*15;if(keys.has('w')||keys.has('arrowup'))player.position.z-=speed;if(keys.has('s')||keys.has('arrowdown'))player.position.z+=speed;if(keys.has('a')||keys.has('arrowleft'))player.position.x-=speed;if(keys.has('d')||keys.has('arrowright'))player.position.x+=speed;
+player.position.x=Math.max(-165,Math.min(165,player.position.x));player.position.z=Math.max(-145,Math.min(145,player.position.z));
+for(const p of people){p.obj.position.x+=p.speed*p.dir*dt*60;if(Math.abs(p.obj.position.x)>165)p.dir*=-1;p.obj.rotation.y=p.dir<0?Math.PI/2:-Math.PI/2}
+for(const v of vehicles){for(const o of [v.body,v.wheel1,v.wheel2]){o.position.x+=v.dir*v.speed*dt*60;if(Math.abs(o.position.x)>170)o.position.x=-Math.sign(o.position.x)*170}}
+state.minute+=dt*3;if(state.minute>=1440){state.minute-=1440;state.day++;state.cash-=250000+state.staff*160000;state.stock=Math.max(0,state.stock-3);localStorage.setItem(saveKey,JSON.stringify(state))}
+if(service>5){service=0;const h=Math.floor(state.minute/60);if((h>=10||h<=0)&&state.stock>0){let guests=Math.min(state.tables,Math.max(1,Math.floor(state.staff*1.3)));state.served+=guests;state.cash+=guests*(90000+Math.round(state.reputation*450));state.stock=Math.max(0,state.stock-guests);state.reputation=Math.min(100,state.reputation+.03)}update()}
+const daylight=Math.sin((state.minute/1440)*Math.PI*2-Math.PI/2);scene.background.set(daylight>-.2?'#a5cce0':'#182d46');sun.intensity=daylight>-.2?2.3:.25;
+camera.position.set(player.position.x+Math.sin(yaw)*zoom,zoom*.68,player.position.z+Math.cos(yaw)*zoom);camera.lookAt(player.position.x,2,player.position.z);
+renderer.render(scene,camera)}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}
+window.addEventListener('resize',resize);resize();update();tick();
+</script></body></html>
