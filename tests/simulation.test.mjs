@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import {
   createState, advanceSimulation, activeOrders,
   isBusinessHour, npcActivity, npcPopulation, SIMULATION_VERSION
@@ -87,4 +88,12 @@ test('HTML loads simulation module and exposes important UI elements', () => {
   for(const id of ['orders','logs','queue','dayRevenue','citizens','toggleShop'])assert.ok(html.includes('id="'+id+'"'),id);
   assert.ok(html.includes("from './src/simulation.mjs'"));
   assert.ok(html.includes('advanceSimulation(state,whole)'));
+});
+
+test('inline 3D module JavaScript parses cleanly as an ES module', () => {
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const match=html.match(/<script type="module">([\s\S]*?)<\/script>/);
+  assert.ok(match,'3D inline module script exists');
+  const check=spawnSync(process.execPath,['--check','--input-type=module'],{input:match[1],encoding:'utf8'});
+  assert.equal(check.status,0,check.stderr || 'invalid JS syntax');
 });
