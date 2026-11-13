@@ -97,3 +97,12 @@ test('inline 3D module JavaScript parses cleanly as an ES module', () => {
   const check=spawnSync(process.execPath,['--check','--input-type=module'],{input:match[1],encoding:'utf8'});
   assert.equal(check.status,0,check.stderr || 'invalid JS syntax');
 });
+
+test('optional external assets are wired with valid relative paths and import map', () => {
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  for(const path of ['assets/models/ghe-nhua.glb','assets/audio/chao-khach-vien.mp3'])assert.ok(html.includes(path),path);
+  assert.ok(html.includes('id="voiceGreeting"'));
+  assert.ok(html.includes('GLTFLoader'));
+  assert.ok(html.includes('"three/addons/"'));
+  assert.ok(html.includes('greetingEnabled'));
+});
