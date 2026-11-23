@@ -1,0 +1,11 @@
+# Generated local Blender outputs and backups
+HANOI_WORLD_V04_OUTPUT/
+*.blend1
+*.blend2
+__pycache__/
+*.pyc
+# Avoid secrets and licensed voice redistribution
+.env
+.env.*
+!*.env.example
+assets/audio/*.mp3
