@@ -1,0 +1,28 @@
+name: Blender asset pipeline lint
+on:
+  push:
+    paths:
+      - "tools/blender_finalize_hanoi.py"
+      - "tools/run_blender_windows.ps1"
+      - "tests/test_blender_pipeline.py"
+      - ".github/workflows/blender-pipeline.yml"
+  pull_request:
+    paths:
+      - "tools/blender_finalize_hanoi.py"
+      - "tools/run_blender_windows.ps1"
+      - "tests/test_blender_pipeline.py"
+      - ".github/workflows/blender-pipeline.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python syntax validation
+        run: python -m py_compile tools/blender_finalize_hanoi.py
+      - name: Static pipeline tests (no Blender runtime)
+        run: python -m unittest discover -s tests -p 'test_blender_pipeline.py' -v
