@@ -149,6 +149,10 @@ def add_zone(origin_x,origin_y,coll):
     def pt(x,y,z=0):
         return (origin_x+x,origin_y+y,z)
     box("NEW_ROAD",pt(0,0,.0),(122,13,.16),asphalt,coll)
+    # Short bridge to the existing world edge; preserve the original road and terrain.
+    box("CONNECTOR_ROAD",pt(-69,0,.0),(18,13,.16),asphalt,coll)
+    for side in [-1,1]:
+        box("CONNECTOR_SIDEWALK",pt(-69,side*9.0,.10),(18,4.5,.19),pavement,coll)
     for side in [-1,1]:
         box("SIDEWALK",pt(0,side*9.0,.10),(122,4.5,.19),pavement,coll)
     for x in range(-54,58,9):
@@ -303,6 +307,8 @@ def main():
     (output/"glb").mkdir(exist_ok=True)
     if source.parent==output:
         raise RuntimeError("Open the original Blender file, not a previous output copy")
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
     col=ensure_collection(COLLECTION)
     if len(col.objects)==0:
         minx,maxx,miny,maxy=safe_world_bbox()
