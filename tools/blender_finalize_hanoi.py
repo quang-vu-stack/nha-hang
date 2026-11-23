@@ -305,7 +305,7 @@ def main():
     output=source.parent/OUTNAME
     output.mkdir(parents=True,exist_ok=True)
     (output/"glb").mkdir(exist_ok=True)
-    if source.parent==output:
+    if source.parent.name == OUTNAME:
         raise RuntimeError("Open the original Blender file, not a previous output copy")
     if bpy.context.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
