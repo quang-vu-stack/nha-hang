@@ -2,7 +2,12 @@
 
 **Dự án game 3D mô phỏng cuộc sống Việt Nam, khởi đầu tại Hà Nội.**
 
-**Phiên bản hiện tại: V0.4 — Chủ quán hỗ trợ phục vụ và thu tiền trực tiếp, điều khiển cảm ứng và lưu vị trí.**
+**Phiên bản hiện tại: V0.4.1 — Nhập nguyên liệu theo loại và khách gọi món theo ngân sách.**
+
+Trong bảng quản lý, chọn loại hàng để nhập riêng 20 phần với giá 160.000đ, hoặc nhập gói tổng hợp 100 phần. Đây là mức giá mô phỏng theo đơn giá nhập hàng hiện có. Thực đơn hiển thị tổng tiền dự kiến và số phần còn nhận được sau khi giữ nguyên liệu cho đơn đang chờ. Bếp đợi đúng loại nguyên liệu của món. Khách chọn món vừa đủ tiền thanh toán, tên trên đơn dùng đúng tên cư dân.
+
+Kiểm tra V0.4.1 đạt 36/36 bài Node, gồm hết đúng loại nguyên liệu, giữ hàng cho đơn chờ, nhập hàng rồi nạp lại, ngân sách khách và nhập hàng thất bại. Giao diện WebGL và lựa chọn nhập hàng trên thiết bị thật còn cần chơi thử.
+
 
 Đến gần bàn đang ở bước phục vụ rồi nhấn **E** hoặc nút tương tác để giao món. Đến quầy thu ngân khi có khách thanh toán để thu tiền. Có thể dùng **Tạm dừng**, sau đó thực hiện tương tác, hoặc chọn tốc độ **0,5× / 1× / 2×**. Nhân viên tiếp tục xử lý đơn tự động khi thời gian chạy.
 
@@ -39,7 +44,7 @@ Bản demo này cũng có thể chạy trên GitHub Pages nếu **chủ reposito
 - ✅ **Lời chào nhân viên Lễ Tân & Đồng bộ khách 3D:** Nhân viên tại **Quầy Lễ Tân** chào đón khi người chơi đến gần (chỉ phát sau khi người chơi bật âm thanh qua nút `#greetNpc`, không autoplay, kèm thời gian chờ 15 giây chống lặp). Khách hàng 3D đồng bộ trực tiếp với trạng thái gọi món, hiện đĩa thức ăn & cốc bia trên bàn khi đang ăn (`eating`), và di chuyển ra Quầy Thu Ngân khi thanh toán (`paying`).
 - ✅ **Tối ưu hiệu suất & Bảo vệ Save Game:** Tái sử dụng `BufferGeometry`/`Material`, phân tầng tần suất cập nhật NPC theo khoảng cách (`computeNpcLodTier`), giới hạn bộ nhớ lịch sử đơn/nhật ký, đóng gói save có kiểm tra `checksum` (FNV-1a), tự động khôi phục từ `backup slot` khi dữ liệu bị lỗi và tương thích ngược với save V0.1/V0.2.
 - ✅ **Bản đồ Việt Nam thực tế 2D** qua OpenStreetMap / Leaflet.
-- ✅ **Bộ kiểm thử tự động 30 bài test** chạy bằng Node 22 và GitHub Actions CI (`node --test tests/*.test.mjs`).
+- ✅ **Bộ kiểm thử tự động 36 bài test** chạy bằng Node 22 và GitHub Actions CI (`node --test tests/*.test.mjs`).
 
 ## Mục tiêu dài hạn
 
@@ -53,7 +58,7 @@ Bản demo này cũng có thể chạy trên GitHub Pages nếu **chủ reposito
 
 Chạy từ thư mục repo:
 
-- Test (30 bài kiểm thử): `node --test tests/*.test.mjs`
+- Test (36 bài kiểm thử): `node --test tests/*.test.mjs`
 - Kiểm tra cú pháp:
   - `node --check src/simulation.mjs`
   - `node --check src/restaurant-media.mjs`

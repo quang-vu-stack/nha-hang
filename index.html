@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội V0.4</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội V0.4.1</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#091622;color:#ecf4fa;font:14px system-ui,Arial;overflow:hidden}#scene{position:fixed;inset:0}
@@ -10,9 +10,9 @@
 #ownerHint{font-size:12px;color:#c8dce7}#interact:disabled{opacity:.5;cursor:default}#timeControls{display:flex;justify-content:center;gap:5px}
 button:focus-visible{outline:3px solid #f8c879;outline-offset:2px}#panelToggle,#touchControls{display:none}
 @media(max-width:700px){#panelToggle{display:block;position:fixed;top:65px;left:8px;z-index:3;min-height:44px}#panel{display:none;z-index:2;top:112px;bottom:180px;width:260px}#panel.expanded{display:block}.bottom{display:none}#ownerHud{left:auto;right:8px;bottom:16px;transform:none;width:190px;padding:8px}#touchControls{display:grid;position:fixed;left:8px;bottom:20px;grid-template-columns:repeat(3,44px);gap:4px;touch-action:none}#touchControls button{height:44px;touch-action:none}#touchControls button:first-child{grid-column:2}#touchControls button:nth-child(2){grid-column:1}#scene{touch-action:none}}
-</style></head>
+select{font:inherit;color:#fff;background:#20364a;border:1px solid #ffffff40;border-radius:10px;padding:10px;width:100%}select:focus-visible{outline:3px solid #f8c879}</style></head>
 <body><div id="scene"></div><aside id="panel">
-<div class="pill">V0.4 • HANOI LIVING WORLD</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
+<div class="pill">V0.4.1 • HANOI LIVING WORLD</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
 <div class="stats"><div class="stat"><small>💰 Tiền mặt</small><b id="cash"></b></div><div class="stat"><small>🍽️ Khách phục vụ</small><b id="served"></b></div><div class="stat"><small>👥 Nhân viên</small><b id="staff"></b></div><div class="stat"><small>📦 Nguyên liệu</small><b id="stock"></b></div><div class="stat"><small>⭐ Danh tiếng</small><b id="reputation"></b></div><div class="stat"><small>🏮 Bàn ăn</small><b id="tables"></b></div></div>
 <div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>📉 Chi phí & giá vốn: <b id="dayCosts">0 ₫</b><br>📈 Lợi nhuận ròng: <b id="dayProfit">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
 <h2>NHÂN SỰ: ĐẦU BẾP • PHỤC VỤ • THU NGÂN</h2><div class="orders" id="staffBreakdown">Đang phân ca nhân sự...</div>
@@ -20,8 +20,8 @@ button:focus-visible{outline:3px solid #f8c879;outline-offset:2px}#panelToggle,#
 <h2>THỰC ĐƠN & TỒN KHO NGUYÊN LIỆU (VND)</h2><div class="menu-box" id="menuList">Đang tải thực đơn...</div>
 <h2>NHỊP SỐNG CƯ DÂN HÀ NỘI</h2><div class="orders" id="npcSummary">Đang cập nhật lịch trình cư dân...</div>
 <h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
-<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
-<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.4 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
+<h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><label for="ingredientType">Loại hàng cần nhập</label><select id="ingredientType"><option value="">Tổng hợp · 100 phần · 800.000đ</option><option value="meat">Thịt · 20 phần · 160.000đ</option><option value="seafood">Hải sản · 20 phần · 160.000đ</option><option value="veggies">Rau · 20 phần · 160.000đ</option><option value="drinks">Đồ uống · 20 phần · 160.000đ</option><option value="spices">Gia vị · 20 phần · 160.000đ</option></select><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
+<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.4.1 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
 <div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán (đến Quầy Lễ Tân để nghe chào khi bật tiếng)<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Bếp nấu • Phục vụ bưng bàn • Thu ngân tính tiền VND.</div>
 <button id="panelToggle" aria-controls="panel" aria-expanded="false">Quản lý quán</button>
@@ -35,7 +35,7 @@ import * as THREE from 'three';
 import { nearbyOwnerAction, performOwnerAction } from './src/owner-interaction.mjs';
 import { installUserStools, installNpcGreeting } from './src/restaurant-media.mjs';
 import {
-  MENU, INGREDIENT_LABELS, activityLabel,
+  INGREDIENT_LABELS, activityLabel, menuAvailability,
   advanceSimulation, activeOrders, npcPopulation,
   countStaffByRole, restockIngredients, hireStaffMember,
   calculateProfit, saveGameState, loadGameState
@@ -85,7 +85,7 @@ function update(){
   : 'Hiện chưa có đơn hàng';
 
  const ingLines=Object.entries(state.ingredients||{}).map(([k,v])=>`${INGREDIENT_LABELS[k]||k}: ${v}`).join(' • ');
- const dishLines=MENU.map(d=>`• ${d.name}: ${money(d.price)} (vốn ${money(d.cost)})`).join('\n');
+ const dishLines=menuAvailability(state).map(d=>`• ${d.name}: ${money(d.total)} (vốn ${money(d.cost)}) · ${d.available>0?'Nhận thêm '+d.available+' phần':'Tạm hết món'}`).join('\n');
  $('menuList').textContent=`Kho: ${ingLines}\n${dishLines}`;
 
  const actCounts={};
@@ -122,9 +122,12 @@ $('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Tiếp t�
 $('speed').onclick=()=>{simulationSpeed=simulationSpeed===1?0.5:simulationSpeed===0.5?2:1;$('speed').textContent='Tốc độ '+simulationSpeed+'×'};
 $('panelToggle').onclick=()=>{const open=$('panel').classList.toggle('expanded');$('panelToggle').setAttribute('aria-expanded',String(open))};
 
+$('ingredientType').onchange=()=>{$('buy').textContent=$('ingredientType').value?'📦 Nhập 20 phần · 160.000đ':'📦 Nhập 100 phần · 800.000đ'};
 $('buy').onclick=()=>{
- if(!restockIngredients(state,100,800000))return toast('Không đủ tiền nhập nguyên liệu');
- persist();update();toast('Đã nhập thêm 100 phần nguyên liệu');
+ const ingredient=$('ingredientType').value||null;
+ const units=ingredient?20:100,cost=ingredient?160000:800000;
+ if(!restockIngredients(state,units,cost,ingredient))return toast('Không đủ tiền nhập nguyên liệu');
+ const saved=persist();update();toast(saved?'Đã nhập '+units+' phần '+(INGREDIENT_LABELS[ingredient]||'nguyên liệu tổng hợp'):'Đã nhập hàng, nhưng chưa lưu được tiến độ');
 };
 $('hire').onclick=()=>{
  const m=hireStaffMember(state,null,2000000);

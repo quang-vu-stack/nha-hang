@@ -1,7 +1,7 @@
-// VIETNAM LIFE 3D — V0.3 simulation core.
+// VIETNAM LIFE 3D — restaurant and citizen simulation.
 // Pure JavaScript, browser/Node compatible; no paid API required.
 
-export const SIMULATION_VERSION = '0.4.0';
+export const SIMULATION_VERSION = '0.4.1';
 export const SAVE_KEYS = {
   primary: 'vietnam-life-3d-github-v03',
   backup: 'vietnam-life-3d-github-v03-backup',
@@ -437,61 +437,58 @@ function arrivalInterval(s, random) {
   return Math.max(5, 22 - Math.floor(s.reputation / 12) + variance + (s.rain ? 6 : 0));
 }
 
-export function selectMenuDish(state, random = Math.random, customerBudget = Infinity) {
-  const ing = state.ingredients || distributeStockToIngredients(state.stock);
-  const available = MENU.filter(d => (ing[d.ingredient] || 0) >= d.stockUnits && d.price <= customerBudget);
-  const pool = available.length > 0
-    ? available
-    : MENU.filter(d => (ing[d.ingredient] || 0) >= d.stockUnits);
-
-  if (pool.length === 0) {
-    // If specific bucket was desynced from raw stock manipulation in tests, fall back to MENU[0] if state.stock > 0
-    if (state.stock > 0) return MENU[0];
-    return null;
+export function menuAvailability(state) {
+  const ingredients = state.ingredients || distributeStockToIngredients(state.stock);
+  const reserved = Object.fromEntries(INGREDIENT_KEYS.map(key => [key, 0]));
+  for (const order of state.orders || []) {
+    if (order.status !== 'queued') continue;
+    const dish = MENU.find(item => item.id === order.dishId) || MENU[0];
+    reserved[dish.ingredient] += dish.stockUnits;
   }
-  const idx = Math.floor(Math.max(0, Math.min(0.999999, random())) * pool.length);
-  return pool[idx];
+  return MENU.map(dish => ({
+    ...dish,
+    total: dish.price + Math.round(state.reputation * 650),
+    available: Math.max(0, Math.floor(((ingredients[dish.ingredient] || 0) - reserved[dish.ingredient]) / dish.stockUnits)),
+  }));
+}
+
+export function selectMenuDish(state, random = Math.random, customerBudget = Infinity) {
+  const pool = menuAvailability(state).filter(dish => dish.available > 0 && dish.total <= customerBudget);
+  if (pool.length === 0) return null;
+  const index = Math.floor(Math.max(0, Math.min(0.999999, random())) * pool.length);
+  return pool[index];
 }
 
 function consumeDishIngredient(state, dish) {
-  if (!state.ingredients || typeof state.ingredients !== 'object') {
-    state.ingredients = distributeStockToIngredients(state.stock);
-  }
-  const currentTotal = totalIngredientStock(state.ingredients);
-  if (currentTotal !== state.stock) {
-    state.ingredients = distributeStockToIngredients(state.stock);
-  }
-  const key = dish?.ingredient && INGREDIENT_KEYS.includes(dish.ingredient) ? dish.ingredient : 'meat';
-  if ((state.ingredients[key] || 0) > 0) {
-    state.ingredients[key]--;
-  } else {
-    const fallbackKey = INGREDIENT_KEYS.find(k => (state.ingredients[k] || 0) > 0);
-    if (fallbackKey) state.ingredients[fallbackKey]--;
-  }
-  state.stock = Math.max(0, state.stock - 1);
-  const cost = Number.isFinite(Number(dish?.cost)) ? Number(dish.cost) : 28000;
-  state.todayIngredientCost = (state.todayIngredientCost || 0) + cost;
+  if ((state.ingredients[dish.ingredient] || 0) < dish.stockUnits) return false;
+  state.ingredients[dish.ingredient] -= dish.stockUnits;
+  state.stock = totalIngredientStock(state.ingredients);
+  state.todayIngredientCost = (state.todayIngredientCost || 0) + dish.cost;
   state.todayProfit = calculateProfit(state);
+  return true;
 }
 
-export function restockIngredients(state, units = 100, cost = 800000) {
-  const addUnits = Math.max(1, Math.floor(Number(units) || 100));
-  const totalCost = Math.max(0, Math.round(Number(cost) || 0));
+export function restockIngredients(state, units = 100, cost = 800000, ingredient = null) {
+  if (!Number.isFinite(units) || units < 1 || !Number.isFinite(cost) || cost < 0) return false;
+  if (ingredient !== null && !INGREDIENT_KEYS.includes(ingredient)) return false;
+  const addUnits = Math.floor(units);
+  const totalCost = Math.round(cost);
   if (state.cash < totalCost) return false;
   state.cash -= totalCost;
   state.todayCosts += totalCost;
   if (!state.ingredients || typeof state.ingredients !== 'object') {
     state.ingredients = distributeStockToIngredients(state.stock);
   }
-  const perKey = Math.floor(addUnits / INGREDIENT_KEYS.length);
-  let rem = addUnits % INGREDIENT_KEYS.length;
-  for (const k of INGREDIENT_KEYS) {
+  const keys = ingredient === null ? INGREDIENT_KEYS : [ingredient];
+  const perKey = Math.floor(addUnits / keys.length);
+  let rem = addUnits % keys.length;
+  for (const k of keys) {
     state.ingredients[k] = (state.ingredients[k] || 0) + perKey + (rem > 0 ? 1 : 0);
     if (rem > 0) rem--;
   }
   state.stock = totalIngredientStock(state.ingredients);
   state.todayProfit = calculateProfit(state);
-  addLog(state, 'Nhập thêm ' + addUnits + ' phần nguyên liệu (-' + totalCost.toLocaleString('vi-VN') + 'đ)');
+  addLog(state, 'Nhập thêm ' + addUnits + ' phần ' + (INGREDIENT_LABELS[ingredient] || 'nguyên liệu tổng hợp') + ' (-' + totalCost.toLocaleString('vi-VN') + 'đ)');
   return true;
 }
 
@@ -573,7 +570,7 @@ function completeOrderPayment(s, o) {
     if (citizen) {
       citizen.hunger = Math.max(0, citizen.hunger - 45);
       citizen.mood = Math.min(100, citizen.mood + 8);
-      citizen.budget = Math.max(20000, citizen.budget - amount);
+      citizen.budget = Math.max(0, citizen.budget - amount);
       citizen.currentOrderId = null;
     }
   }
@@ -695,7 +692,7 @@ function stepMinute(s, random) {
   for (const o of s.orders) {
     if (o.status !== 'queued' || cooking >= chefCapacity || s.stock <= 0) continue;
     const dish = MENU.find(d => d.id === o.dishId) || MENU[0];
-    consumeDishIngredient(s, dish);
+    if (!consumeDishIngredient(s, dish)) continue;
     o.status = 'cooking';
     const prepBase = dish.prepMinutes || 10;
     o.remaining = Math.max(5, prepBase - Math.floor(s.staff / 4));
@@ -718,40 +715,47 @@ function stepMinute(s, random) {
       } else {
         const orderIndex = s.nextOrderId - 1;
         const activeCitizenIds = new Set(activeOrders(s).map(o => o.citizenId).filter(Boolean));
-        const citizenCandidate = Array.isArray(s.citizens)
-          ? s.citizens.find(
+        const candidates = Array.isArray(s.citizens)
+          ? s.citizens.filter(
               c =>
                 !c.currentOrderId &&
                 !activeCitizenIds.has(c.id) &&
                 (c.activity === 'lunch' || c.activity === 'dinner' || c.hunger >= 50)
             )
-          : null;
-        const customer = NAMES[orderIndex % NAMES.length];
-        const dish = selectMenuDish(s, random, citizenCandidate ? citizenCandidate.budget : Infinity) || MENU[0];
-        const total = dish.price + Math.round(s.reputation * 650);
-        const order = {
-          id: s.nextOrderId++,
-          customer,
-          citizenId: citizenCandidate ? citizenCandidate.id : null,
-          table: free,
-          dishId: dish.id,
-          dishName: dish.name,
-          ingredient: dish.ingredient,
-          price: dish.price,
-          cost: dish.cost,
-          eatMinutes: dish.eatMinutes || 8,
-          status: 'queued',
-          remaining: 0,
-          wait: 0,
-          total,
-          paid: false,
-        };
-        if (citizenCandidate) {
-          citizenCandidate.currentOrderId = order.id;
-          citizenCandidate.activity = 'dining_out';
+          : [];
+        const candidateIndex = Math.floor(Math.max(0, Math.min(0.999999, random())) * candidates.length);
+        const citizenCandidate = candidates[candidateIndex];
+        const customer = citizenCandidate ? citizenCandidate.name : NAMES[orderIndex % NAMES.length];
+        const dish = selectMenuDish(s, random, citizenCandidate ? citizenCandidate.budget : Infinity);
+        if (!dish) {
+          s.rejected++;
+          addLog(s, customer + ' rời quán vì hết món phù hợp với nguyên liệu và ngân sách');
+        } else {
+          const total = dish.total;
+          const order = {
+            id: s.nextOrderId++,
+            customer,
+            citizenId: citizenCandidate ? citizenCandidate.id : null,
+            table: free,
+            dishId: dish.id,
+            dishName: dish.name,
+            ingredient: dish.ingredient,
+            price: dish.price,
+            cost: dish.cost,
+            eatMinutes: dish.eatMinutes || 8,
+            status: 'queued',
+            remaining: 0,
+            wait: 0,
+            total,
+            paid: false,
+          };
+          if (citizenCandidate) {
+            citizenCandidate.currentOrderId = order.id;
+            citizenCandidate.activity = 'dining_out';
+          }
+          s.orders.push(order);
+          addLog(s, customer + ' vào quán, chọn bàn ' + (free + 1) + ' và gọi ' + dish.name);
         }
-        s.orders.push(order);
-        addLog(s, customer + ' vào quán, chọn bàn ' + (free + 1) + ' và gọi ' + dish.name);
       }
     }
   }
