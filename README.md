@@ -2,7 +2,14 @@
 
 **Dự án game 3D mô phỏng cuộc sống Việt Nam, khởi đầu tại Hà Nội.**
 
-**Phiên bản hiện tại: V0.3 — Cư dân NPC có cuộc sống và nhu cầu cá nhân, thực đơn & hạch toán lợi nhuận bằng VND, nhân sự Đầu bếp / Phục vụ / Thu ngân hoạt động độc lập, cảnh quan Hà Nội 3D nâng cấp kèm pipeline GLB từ Blender và bảo vệ dữ liệu save.**
+**Phiên bản hiện tại: V0.4 — Chủ quán hỗ trợ phục vụ và thu tiền trực tiếp, điều khiển cảm ứng và lưu vị trí.**
+
+Đến gần bàn đang ở bước phục vụ rồi nhấn **E** hoặc nút tương tác để giao món. Đến quầy thu ngân khi có khách thanh toán để thu tiền. Có thể dùng **Tạm dừng**, sau đó thực hiện tương tác, hoặc chọn tốc độ **0,5× / 1× / 2×**. Nhân viên tiếp tục xử lý đơn tự động khi thời gian chạy.
+
+Trên màn hình nhỏ, dùng bốn nút mũi tên để di chuyển và **Quản lý quán** để mở bảng điều hành. Game tự lưu mỗi 15 giây và khi rời trang, kèm vị trí nhân vật và góc camera. Bản lưu V0.1–V0.3 được tiếp tục đọc từ khóa lưu hiện có.
+
+Kiểm tra V0.4 đạt 30/30 bài Node, gồm chống thu tiền hai lần, thao tác sau khi nhân viên đã hoàn thành, và lưu/nạp giữa các giai đoạn. Kiểm tra WebGL trực tiếp chưa hoàn tất vì Chromium của môi trường kiểm thử bị chặn tạo socket. Cần thử ca phục vụ và điều khiển cảm ứng trên trình duyệt thực tế.
+
 
 Người chơi làm chủ quán nhậu hư cấu **Nhậu Phố Việt**, quản lý cửa hàng, nhân viên (đầu bếp, phục vụ, thu ngân), thực đơn, nguyên liệu, tiền mặt, doanh thu, lợi nhuận ròng (VND) và trải nghiệm nhịp sống Hà Nội hàng ngày.
 
@@ -32,7 +39,7 @@ Bản demo này cũng có thể chạy trên GitHub Pages nếu **chủ reposito
 - ✅ **Lời chào nhân viên Lễ Tân & Đồng bộ khách 3D:** Nhân viên tại **Quầy Lễ Tân** chào đón khi người chơi đến gần (chỉ phát sau khi người chơi bật âm thanh qua nút `#greetNpc`, không autoplay, kèm thời gian chờ 15 giây chống lặp). Khách hàng 3D đồng bộ trực tiếp với trạng thái gọi món, hiện đĩa thức ăn & cốc bia trên bàn khi đang ăn (`eating`), và di chuyển ra Quầy Thu Ngân khi thanh toán (`paying`).
 - ✅ **Tối ưu hiệu suất & Bảo vệ Save Game:** Tái sử dụng `BufferGeometry`/`Material`, phân tầng tần suất cập nhật NPC theo khoảng cách (`computeNpcLodTier`), giới hạn bộ nhớ lịch sử đơn/nhật ký, đóng gói save có kiểm tra `checksum` (FNV-1a), tự động khôi phục từ `backup slot` khi dữ liệu bị lỗi và tương thích ngược với save V0.1/V0.2.
 - ✅ **Bản đồ Việt Nam thực tế 2D** qua OpenStreetMap / Leaflet.
-- ✅ **Bộ kiểm thử tự động 27 bài test** chạy bằng Node 22 và GitHub Actions CI (`node --test tests/*.test.mjs`).
+- ✅ **Bộ kiểm thử tự động 30 bài test** chạy bằng Node 22 và GitHub Actions CI (`node --test tests/*.test.mjs`).
 
 ## Mục tiêu dài hạn
 
@@ -46,7 +53,7 @@ Bản demo này cũng có thể chạy trên GitHub Pages nếu **chủ reposito
 
 Chạy từ thư mục repo:
 
-- Test (27 bài kiểm thử V0.3 & Media): `node --test tests/*.test.mjs`
+- Test (30 bài kiểm thử): `node --test tests/*.test.mjs`
 - Kiểm tra cú pháp:
   - `node --check src/simulation.mjs`
   - `node --check src/restaurant-media.mjs`
