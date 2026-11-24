@@ -1,7 +1,7 @@
 // VIETNAM LIFE 3D — V0.3 simulation core.
 // Pure JavaScript, browser/Node compatible; no paid API required.
 
-export const SIMULATION_VERSION = '0.3.0';
+export const SIMULATION_VERSION = '0.4.0';
 export const SAVE_KEYS = {
   primary: 'vietnam-life-3d-github-v03',
   backup: 'vietnam-life-3d-github-v03-backup',
@@ -261,6 +261,15 @@ export function createState(saved = {}) {
     : (saved && typeof saved === 'object' ? saved : {});
 
   const s = { ...BASE };
+  const view = src.playerView || {};
+  const bounded = (value, fallback, min, max) =>
+    Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
+  s.playerView = {
+    x: bounded(view.x, -50, -165, 165),
+    z: bounded(view.z, 14, -145, 145),
+    yaw: bounded(view.yaw, 0.7, -Math.PI * 2, Math.PI * 2),
+    zoom: bounded(view.zoom, 24, 11, 55),
+  };
   for (const field of [
     'cash', 'served', 'staff', 'stock', 'reputation', 'tables',
     'minute', 'day', 'nextOrderId', 'nextVisitor',
@@ -579,6 +588,21 @@ function completeOrderPayment(s, o) {
       amount.toLocaleString('vi-VN') +
       'đ)'
   );
+}
+
+// Recheck the phase so repeated input or an automatic transition cannot pay twice.
+export function helpOrder(state, orderId, action) {
+  const order = state.orders.find(o => o.id === orderId);
+  if (!order || order.paid) return false;
+  if (action === 'serve' && order.status === 'serving') {
+    serveOrderToTable(state, order);
+  } else if (action === 'pay' && order.status === 'paying') {
+    completeOrderPayment(state, order);
+  } else {
+    return false;
+  }
+  syncStaffAssignments(state);
+  return true;
 }
 
 function onNewDay(s) {

@@ -30,7 +30,7 @@ function createMockStorage(initial = {}) {
 }
 
 test('version and V0.1/V0.2 save migration are backwards compatible', () => {
-  assert.equal(SIMULATION_VERSION, '0.3.0');
+  assert.equal(SIMULATION_VERSION, '0.4.0');
   const s = createState({ cash: 4000000, served: 10, day: 3, staff: 2, stock: 25 });
   assert.equal(s.cash, 4000000);
   assert.equal(s.day, 3);

@@ -1,13 +1,18 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội V0.3</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VIETNAM LIFE 3D — Hà Nội V0.4</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#091622;color:#ecf4fa;font:14px system-ui,Arial;overflow:hidden}#scene{position:fixed;inset:0}
 #panel{position:fixed;left:16px;top:16px;bottom:16px;width:320px;padding:18px;background:#101e2ddd;border:1px solid #ffffff28;backdrop-filter:blur(18px);border-radius:20px;overflow:auto;box-shadow:0 16px 55px #0006}h1{font-size:21px;line-height:1.15;margin:0 0 8px}h2{font-size:12px;letter-spacing:.04em;color:#9bb3c8;margin:16px 0 8px}p{color:#afc0cf;line-height:1.55;margin:6px 0 10px}.accent{color:#f8c879}.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{padding:10px 12px;background:#ffffff0c;border:1px solid #ffffff18;border-radius:12px}.stat b{display:block;font-size:16px;margin-top:4px}.stat small{color:#b0c5d5}button{border:1px solid #ffffff1b;border-radius:11px;background:#20364a;color:#fff;padding:10px 12px;cursor:pointer;font:inherit;font-weight:600}button:hover{background:#385772}.actions{display:grid;gap:7px}.primary{background:#a95d34}.primary:hover{background:#c27748}.top{position:fixed;right:17px;top:17px;background:#102436d9;padding:12px 18px;border-radius:14px;border:1px solid #ffffff24}.bottom{position:fixed;bottom:18px;right:16px;background:#102436d9;padding:13px;border:1px solid #ffffff22;border-radius:14px;max-width:340px;line-height:1.6}.pill{display:inline-block;color:#a6efc6;background:#19544088;border-radius:15px;padding:3px 9px;font-size:11px}#mapModal{display:none;position:fixed;inset:5%;z-index:5;background:#142235;border:1px solid #ffffff33;border-radius:20px;overflow:hidden;box-shadow:0 20px 80px #0009}#map{height:calc(100% - 59px)}#mapHeader{padding:10px 15px;display:flex;align-items:center;justify-content:space-between}.toast{position:fixed;left:50%;bottom:25px;transform:translateX(-50%);padding:12px 20px;background:#0b2b37e8;border:1px solid #ffffff44;border-radius:14px;display:none;z-index:9;max-width:85vw;text-align:center}@media(max-width:700px){#panel{width:220px;padding:10px;left:7px;top:7px;bottom:7px;border-radius:13px}h1{font-size:16px}.stat{padding:7px}.stat b{font-size:13px}.top{top:7px;right:7px;padding:8px;font-size:11px}.bottom{right:7px;bottom:7px;max-width:165px;font-size:11px;padding:8px}button{padding:8px 7px;font-size:12px}}
 .orders,.menu-box{white-space:pre-line;font-size:12px;line-height:1.55;color:#d9e8ed;background:#0a19299a;border-radius:10px;padding:10px;max-height:118px;overflow-y:auto}.activity{white-space:pre-line;font-size:11px;line-height:1.55;color:#b2c9d5;max-height:110px;overflow-y:auto}.sim-box{padding:9px 11px;background:#31504488;border-radius:10px;margin-top:10px;font-size:12px;line-height:1.65;color:#d5efdd}
+
+#ownerHud{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:grid;gap:8px;max-width:340px;text-align:center;background:#102436ee;padding:12px;border-radius:14px}
+#ownerHint{font-size:12px;color:#c8dce7}#interact:disabled{opacity:.5;cursor:default}#timeControls{display:flex;justify-content:center;gap:5px}
+button:focus-visible{outline:3px solid #f8c879;outline-offset:2px}#panelToggle,#touchControls{display:none}
+@media(max-width:700px){#panelToggle{display:block;position:fixed;top:65px;left:8px;z-index:3;min-height:44px}#panel{display:none;z-index:2;top:112px;bottom:180px;width:260px}#panel.expanded{display:block}.bottom{display:none}#ownerHud{left:auto;right:8px;bottom:16px;transform:none;width:190px;padding:8px}#touchControls{display:grid;position:fixed;left:8px;bottom:20px;grid-template-columns:repeat(3,44px);gap:4px;touch-action:none}#touchControls button{height:44px;touch-action:none}#touchControls button:first-child{grid-column:2}#touchControls button:nth-child(2){grid-column:1}#scene{touch-action:none}}
 </style></head>
 <body><div id="scene"></div><aside id="panel">
-<div class="pill">V0.3 • HANOI LIVING WORLD</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
+<div class="pill">V0.4 • HANOI LIVING WORLD</div><h1>🇻🇳 VIETNAM LIFE <span class="accent">3D</span></h1><p>Hà Nội • Chủ quán Nhậu Phố Việt</p>
 <div class="stats"><div class="stat"><small>💰 Tiền mặt</small><b id="cash"></b></div><div class="stat"><small>🍽️ Khách phục vụ</small><b id="served"></b></div><div class="stat"><small>👥 Nhân viên</small><b id="staff"></b></div><div class="stat"><small>📦 Nguyên liệu</small><b id="stock"></b></div><div class="stat"><small>⭐ Danh tiếng</small><b id="reputation"></b></div><div class="stat"><small>🏮 Bàn ăn</small><b id="tables"></b></div></div>
 <div class="sim-box">🧍 Người dân ngoài phố: <b id="citizens">0</b><br>🍜 Khách đang trong quán: <b id="queue">0</b><br>💵 Doanh thu hôm nay: <b id="dayRevenue">0 ₫</b><br>📉 Chi phí & giá vốn: <b id="dayCosts">0 ₫</b><br>📈 Lợi nhuận ròng: <b id="dayProfit">0 ₫</b><br>🏮 Trạng thái: <b id="shopStatus">Đang mở</b></div>
 <h2>NHÂN SỰ: ĐẦU BẾP • PHỤC VỤ • THU NGÂN</h2><div class="orders" id="staffBreakdown">Đang phân ca nhân sự...</div>
@@ -16,14 +21,18 @@
 <h2>NHỊP SỐNG CƯ DÂN HÀ NỘI</h2><div class="orders" id="npcSummary">Đang cập nhật lịch trình cư dân...</div>
 <h2>NHẬT KÝ THÀNH PHỐ & NHÀ HÀNG</h2><div class="activity" id="logs">Đang mô phỏng lịch sinh hoạt Hà Nội...</div>
 <h2>ĐIỀU HÀNH QUÁN NHẬU</h2><div class="actions"><button id="greetNpc">🔊 Nghe nhân viên chào khách</button><button id="toggleShop">🚪 Tạm đóng/mở cửa quán</button><button class="primary" id="buy">📦 Nhập nguyên liệu • 800.000đ</button><button id="hire">👨‍🍳 Tuyển nhân viên • 2.000.000đ</button><button id="advert">📣 Chạy quảng cáo • 600.000đ</button><button id="table">🪑 Mua thêm bàn • 1.500.000đ</button><button id="weather">🌦️ Đổi thời tiết</button><button id="save">💾 Lưu tiến trình (An toàn)</button><button id="showMap">🗺️ Bản đồ Việt Nam thật (2D)</button></div>
-<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.3 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
+<p style="font-size:12px">Cảnh Hà Nội 3D nâng cấp V0.4 (tích hợp ghế nhựa Blender GLB & lời chào quầy lễ tân). NPC có lịch học/làm/ăn/nghỉ; khách vào bàn, gọi món, ăn và thanh toán tại Thu ngân.</p>
 </aside><div class="top"><b id="clock">12:00</b> • <span id="day">Ngày 1</span><div id="condition">☀️ Hà Nội</div></div>
 <div class="bottom">🎮 <b>W A S D / phím mũi tên</b>: di chuyển chủ quán (đến Quầy Lễ Tân để nghe chào khi bật tiếng)<br>🖱️ Kéo chuột: xoay góc nhìn • Lăn: zoom<br>🏙️ Bếp nấu • Phục vụ bưng bàn • Thu ngân tính tiền VND.</div>
+<button id="panelToggle" aria-controls="panel" aria-expanded="false">Quản lý quán</button>
+<div id="touchControls" aria-label="Di chuyển"><button data-key="w" aria-label="Đi lên">↑</button><button data-key="a" aria-label="Đi trái">←</button><button data-key="s" aria-label="Đi xuống">↓</button><button data-key="d" aria-label="Đi phải">→</button></div>
+<div id="ownerHud"><div id="timeControls"><button id="pause" aria-pressed="false">Tạm dừng</button><button id="speed">Tốc độ 1×</button></div><button id="interact" disabled>E · Tương tác</button><div id="ownerHint">Đến bàn đang chờ phục vụ hoặc quầy thu ngân để giúp nhân viên.</div></div>
 <div class="toast" id="toast"></div><div id="mapModal"><div id="mapHeader"><b>🗺️ Việt Nam — OpenStreetMap</b><button id="closeMap">Đóng ✕</button></div><div id="map"></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
+import { nearbyOwnerAction, performOwnerAction } from './src/owner-interaction.mjs';
 import { installUserStools, installNpcGreeting } from './src/restaurant-media.mjs';
 import {
   MENU, INGREDIENT_LABELS, activityLabel,
@@ -88,40 +97,58 @@ function update(){
 
 const world=createHanoiScene(THREE,$('scene'),state);
 const {scene,tables,player}=world;
+player.position.set(state.playerView.x,0,state.playerView.z);
 const fallbackStools=[];
 for(const s of world.fallbackStools)fallbackStools.push(s);
 installUserStools({scene,THREE,tables,fallbackStools,notify:toast});
 const greetingCtrl=installNpcGreeting({button:$('greetNpc'),notify:toast});
 
-function save(){saveGameState(window.localStorage,state);toast('Đã lưu an toàn kèm mã kiểm tra checksum')}
+function persist(){
+ state.playerView={x:player.position.x,z:player.position.z,yaw:cameraControl.yaw%(Math.PI*2),zoom:cameraControl.zoom};
+ return saveGameState(window.localStorage,state);
+}
+function save(){toast(persist()?'Đã lưu ca làm, vị trí và góc nhìn':'Chưa lưu được. Bộ nhớ trình duyệt có thể đã đầy.')}
+function interact(){
+ if($('mapModal').style.display==='block')return;
+ const result=performOwnerAction(state,player.position,tables);
+ if(!result)return;
+ world.syncGuests(state);world.syncStaffAvatars(state);update();
+ toast(result.action==='serve'?'Bạn đã giao món cho khách':'Bạn đã thu tiền cho quán');
+ if(!persist())toast('Thao tác đã xong, nhưng chưa lưu được tiến độ');
+}
+$('interact').onclick=interact;
+let paused=false,simulationSpeed=1;
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Tiếp tục':'Tạm dừng';$('pause').setAttribute('aria-pressed',String(paused))};
+$('speed').onclick=()=>{simulationSpeed=simulationSpeed===1?0.5:simulationSpeed===0.5?2:1;$('speed').textContent='Tốc độ '+simulationSpeed+'×'};
+$('panelToggle').onclick=()=>{const open=$('panel').classList.toggle('expanded');$('panelToggle').setAttribute('aria-expanded',String(open))};
 
 $('buy').onclick=()=>{
  if(!restockIngredients(state,100,800000))return toast('Không đủ tiền nhập nguyên liệu');
- saveGameState(window.localStorage,state);update();toast('Đã nhập thêm 100 phần nguyên liệu');
+ persist();update();toast('Đã nhập thêm 100 phần nguyên liệu');
 };
 $('hire').onclick=()=>{
  const m=hireStaffMember(state,null,2000000);
  if(!m)return toast('Không đủ tiền hoặc đã đạt tối đa nhân sự');
- world.syncStaffAvatars(state);saveGameState(window.localStorage,state);update();
+ world.syncStaffAvatars(state);persist();update();
  toast(`Đã tuyển ${m.label} ${m.name}`);
 };
 $('advert').onclick=()=>{
  if(state.cash<600000)return toast('Không đủ tiền');
  state.cash-=600000;state.todayCosts+=600000;state.reputation=Math.min(100,state.reputation+4);
- saveGameState(window.localStorage,state);update();toast('Đã chạy chiến dịch quảng cáo');
+ persist();update();toast('Đã chạy chiến dịch quảng cáo');
 };
 $('table').onclick=()=>{
  if(state.cash<1500000)return toast('Không đủ tiền');
  state.cash-=1500000;state.todayCosts+=1500000;state.tables++;world.makeTable(state.tables-1);
  for(let i=fallbackStools.length;i<world.fallbackStools.length;i++)fallbackStools.push(world.fallbackStools[i]);
- saveGameState(window.localStorage,state);update();toast('Đã bổ sung thêm bàn nhậu');
+ persist();update();toast('Đã bổ sung thêm bàn nhậu');
 };
 $('weather').onclick=()=>{state.rain=!state.rain;update()};
 $('save').onclick=save;
 $('toggleShop').onclick=()=>{
  state.open=!state.open;
  toast(state.open?'Đã mở quán đón khách':'Tạm đóng cửa, xử lý đơn còn lại');
- saveGameState(window.localStorage,state);update();
+ persist();update();
 };
 
 let map;
@@ -138,21 +165,32 @@ $('showMap').onclick=()=>{
 $('closeMap').onclick=()=>$('mapModal').style.display='none';
 
 const keys=new Set();
-const cameraControl={yaw:0.7,zoom:24};
+const cameraControl={yaw:state.playerView.yaw,zoom:state.playerView.zoom};
 let drag=false,last=0;
-window.addEventListener('keydown',e=>{keys.add(e.key.toLowerCase());if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault()});
+window.addEventListener('keydown',e=>{if(['BUTTON','INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='e'&&!e.repeat)interact();keys.add(e.key.toLowerCase());if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()))e.preventDefault()});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+window.addEventListener('blur',()=>{keys.clear();drag=false});
+for(const button of document.querySelectorAll('[data-key]')){
+ button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);keys.add(button.dataset.key)});
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,()=>keys.delete(button.dataset.key));
+}
+window.addEventListener('pagehide',persist);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.clear();drag=false;persist()}});
 world.renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX});
 window.addEventListener('pointerup',()=>drag=false);
 window.addEventListener('pointermove',e=>{if(drag){cameraControl.yaw+=(e.clientX-last)*.006;last=e.clientX}});
 world.renderer.domElement.addEventListener('wheel',e=>{cameraControl.zoom=Math.max(11,Math.min(55,cameraControl.zoom+e.deltaY*.018))},{passive:true});
 
 const clock=new THREE.Clock();
-let simAccumulator=0;
+let simAccumulator=0,saveElapsed=0;
+const idleKeys=new Set();
 function tick(){
  requestAnimationFrame(tick);
  const dt=Math.min(clock.getDelta(),.05);
- simAccumulator+=dt*3;
+ const blocked=paused||document.hidden||$('mapModal').style.display==='block';
+ simAccumulator+=blocked?0:dt*3*simulationSpeed;
+ saveElapsed+=dt;
+ if(saveElapsed>=15){saveElapsed=0;if(!persist())toast('Chưa tự lưu được tiến độ. Hãy kiểm tra bộ nhớ trình duyệt.')}
  if(simAccumulator>=1){
   const whole=Math.floor(simAccumulator);
   simAccumulator-=whole;
@@ -161,9 +199,12 @@ function tick(){
   world.syncGuests(state);
   world.syncStaffAvatars(state);
   update();
-  if(state.day!==previousDay)saveGameState(window.localStorage,state);
+  if(state.day!==previousDay)persist();
  }
- world.stepFrame(state,dt,keys,cameraControl);
+ world.stepFrame(state,blocked?0:dt,blocked?idleKeys:keys,cameraControl);
+ const action=nearbyOwnerAction(state,player.position,tables);
+ $('interact').disabled=!action||$('mapModal').style.display==='block';
+ $('interact').textContent=action?'E · '+action.label:'E · Tương tác';
  greetingCtrl.checkReceptionProximity(player.position,RESTAURANT_ZONES.reception);
 }
 window.addEventListener('resize',world.resize);
